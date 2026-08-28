@@ -10,6 +10,11 @@ const routes = [
     component: () => import('../views/common/LoginView.vue'),
   },
   {
+    path: '/showcase',
+    name: 'Showcase',
+    component: () => import('../views/common/ShowcaseView.vue'),
+  },
+  {
     path: '/register',
     name: 'Register',
     component: () => import('../views/common/RegisterView.vue'),
@@ -142,7 +147,7 @@ const routes = [
 ]
 
 const pageTitles = {
-  Home: '首页', Login: '用户登录', Register: '用户注册', Profile: '个人信息',
+  Home: '首页', Showcase: '系统展示', Login: '用户登录', Register: '用户注册', Profile: '个人信息',
   UserDashboard: '数据看板', UserDashboardCharts: '图表总览', JobDemandAnalysis: '岗位需求分析',
   SalaryAnalysis: '薪资水平分析', CityAnalysis: '城市与区域分析', EducationAnalysis: '学历层次分析',
   MajorAnalysis: '专业细分方向分析', MultiDimensionAnalysis: '多维度分析', UserJobs: '岗位数据查询',
