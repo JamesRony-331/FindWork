@@ -1,0 +1,15 @@
+@media (max-width: 1180px) {
+  .page-content { padding: 20px; }
+  .filter-bar { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .page-content { padding: 16px 14px 28px; }
+  .page-header { display: block; }
+  .page-meta { display: block; margin-top: 8px; white-space: normal; }
+  .page-title { font-size: 21px; }
+  .filter-bar { grid-template-columns: 1fr; }
+  .filter-actions { width: 100%; }
+  .filter-actions .button { flex: 1; }
+  .chart-grid { grid-template-columns: 1fr; }
+}

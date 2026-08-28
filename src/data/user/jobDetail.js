@@ -1,0 +1,4 @@
+import { jobRows } from './jobs.js'
+const descriptions={1:['负责公司核心业务系统的设计与开发，参与需求分析与技术方案制定','基于 Java 语言进行后端开发，编写高质量、可维护的代码','参与系统性能优化、问题排查与技术改进','与产品、测试等团队协作，保障项目按时交付'],2:['负责 Web 前端页面和交互功能开发','参与组件库维护和性能优化','与设计和后端团队协作完成产品迭代']}
+export function getJobDetail(id){const row=jobRows.find(item=>item.id===String(id)); if(!row)return null; return {...row,category:row.standardJob.includes('测试')?'测试类':'开发类',major:'计算机科学与技术、软件工程等相关专业',description:descriptions[row.id]||['参与岗位相关系统的设计、开发与维护','按要求完成项目任务并持续改进交付质量','与团队成员协作解决实际业务问题'],collectTime:'2025-05-20 10:30:45'} }
+export function getDetailFields(job){return job?[{label:'公司名称',value:job.company},{label:'薪资范围',value:job.salary},{label:'工作城市',value:job.city},{label:'学历要求',value:job.education},{label:'经验要求',value:job.experience},{label:'专业要求',value:job.major},{label:'岗位类别',value:job.category},{label:'标准岗位',value:job.standardJob}]:[]}
