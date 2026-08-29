@@ -1,0 +1,70 @@
+<script setup>
+import AppIcon from './AppIcon.vue';
+defineProps({ items: { type: Array, default: () => [] } });
+</script>
+<template>
+  <div class="metric-strip">
+    <article v-for="item in items" :key="item.key" class="metric-item">
+      <span class="metric-icon"><AppIcon :name="item.icon" :size="23" /></span>
+      <div>
+        <span class="metric-label">{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+        <small>{{ item.note }}</small>
+      </div>
+    </article>
+  </div>
+</template>
+<style scoped>
+.metric-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 116px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+}
+.metric-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: var(--color-primary-700);
+  background: var(--color-accent-soft);
+}
+.metric-label,
+small {
+  display: block;
+  color: var(--color-text-secondary);
+}
+strong {
+  display: block;
+  margin: 2px 0;
+  font-size: 22px;
+  color: var(--color-primary-900);
+}
+small {
+  font-size: 12px;
+  color: var(--color-success);
+}
+@media (max-width: 1050px) {
+  .metric-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 520px) {
+  .metric-strip {
+    grid-template-columns: 1fr;
+  }
+  .metric-item {
+    min-height: 96px;
+  }
+}
+</style>

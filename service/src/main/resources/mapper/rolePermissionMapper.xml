@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wzbc.GoWorking.Mapper.RolePermissionMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="rolePermissionPO.id">
+        INSERT INTO sys_role_permission (role_id, permission_id)
+        VALUES (#{rolePermissionPO.roleId}, #{rolePermissionPO.permissionId})
+    </insert>
+    <update id="updateById">
+        UPDATE sys_role_permission
+        SET role_id = #{rolePermissionPO.roleId}, permission_id = #{rolePermissionPO.permissionId}
+        WHERE id = #{rolePermissionPO.id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM sys_role_permission WHERE id = #{id}
+    </delete>
+    <select id="selectById" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePermissionPO">
+        SELECT id, role_id AS roleId, permission_id AS permissionId
+        FROM sys_role_permission WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePermissionPO">
+        SELECT id, role_id AS roleId, permission_id AS permissionId
+        FROM sys_role_permission ORDER BY id
+    </select>
+</mapper>

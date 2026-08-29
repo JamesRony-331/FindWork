@@ -1,0 +1,5 @@
+node_modules
+dist
+.git
+docs/design-concepts
+package-lock.json

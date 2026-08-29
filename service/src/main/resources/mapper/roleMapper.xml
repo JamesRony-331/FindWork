@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wzbc.GoWorking.Mapper.RoleMapper">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="rolePO.id">
+        INSERT INTO sys_role (role_name, role_code)
+        VALUES (#{rolePO.roleName}, #{rolePO.roleCode})
+    </insert>
+    <update id="updateById">
+        UPDATE sys_role
+        SET role_name = #{rolePO.roleName}, role_code = #{rolePO.roleCode}
+        WHERE id = #{rolePO.id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM sys_role WHERE id = #{id}
+    </delete>
+    <select id="selectById" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePO">
+        SELECT id, role_name AS roleName, role_code AS roleCode
+        FROM sys_role WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePO">
+        SELECT id, role_name AS roleName, role_code AS roleCode
+        FROM sys_role ORDER BY id
+    </select>
+</mapper>

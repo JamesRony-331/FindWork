@@ -1,0 +1,51 @@
+<script setup>
+import { reactive } from 'vue';
+import { useRouter } from 'vue-router';
+import UserLayout from '../../../layouts/UserLayout.vue';
+import PageHeader from '../../../components/common/PageHeader.vue';
+import FilterBar from '../../../components/forms/FilterBar.vue';
+import DataTable from '../../../components/tables/DataTable.vue';
+import AppPagination from '../../../components/tables/AppPagination.vue';
+import StatusView from '../../../components/common/StatusView.vue';
+import { createJobsState, filterFields, pageMeta, tableColumns } from '../../../data/user/jobs';
+const router = useRouter();
+const state = reactive(createJobsState());
+function updateFilters(value) {
+  Object.assign(state.filters, value);
+}
+function openDetail(row) {
+  router.push(`/user/jobs/${row.id}`);
+}
+</script>
+<template>
+  <UserLayout>
+    <div class="page-content">
+      <PageHeader v-bind="pageMeta" />
+      <FilterBar
+        :fields="filterFields"
+        :model-value="state.filters"
+        @update:model-value="updateFilters"
+        @search="state.search()"
+        @reset="state.reset()"
+      />
+      <div class="jobs-table">
+        <DataTable :columns="tableColumns" :rows="state.visibleRows" @action="openDetail">
+          <template #empty>
+            <StatusView title="未找到匹配岗位" description="请调整筛选条件后重新查询" />
+          </template>
+        </DataTable>
+        <AppPagination
+          :page="state.pagination.page"
+          :page-size="state.pagination.pageSize"
+          :total="state.pagination.total"
+          @change="state.changePage($event)"
+        />
+      </div>
+    </div>
+  </UserLayout>
+</template>
+<style scoped>
+.jobs-table {
+  margin-top: 14px;
+}
+</style>

@@ -1,5 +1,36 @@
-# Vue 3 + Vite
+# GoWorking
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+高校毕业生招聘信息采集分析系统，仓库按客户端、管理端和服务端分为三个独立目录。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+## 目录结构
+
+- `client/`：Vue 3 客户端
+- `admin/`：Vue 3 管理端
+- `service/`：Spring Boot 服务端
+
+## 本地运行
+
+### 客户端
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### 管理端
+
+```bash
+cd admin
+npm install
+npm run dev
+```
+
+### 服务端
+
+先将 `service/src/main/resources/application-example.properties` 复制为 `application.properties`，通过环境变量配置数据库连接，并设置长度足够的 `JWT_SECRET` 签名密钥。
+
+```bash
+cd service
+./mvnw spring-boot:run
+```

@@ -1,0 +1,77 @@
+export const suggestions = [
+  '北京 Java 开发工程师的平均薪资是多少？',
+  '上海后端开发岗位的需求趋势如何？',
+  '深圳哪些城市片区的就业机会更多？',
+];
+const welcome = [
+  {
+    id: 1,
+    role: 'assistant',
+    time: '10:30',
+    content:
+      '你好！我是 AI 就业助手。你可以询问岗位趋势、薪资水平和城市就业机会。本页面使用本地演示数据，不代表实时查询结果。',
+  },
+];
+const replyRules = [
+  {
+    keywords: ['薪资', '工资'],
+    reply:
+      '根据演示数据，该岗位平均月薪约为 13.2K，10K–15K 区间的岗位占比较高。建议结合学历、经验和城市进一步筛选。',
+  },
+  {
+    keywords: ['趋势', '需求'],
+    reply: '演示趋势显示，近三个月相关岗位数量保持增长，春招阶段需求更集中于开发、测试和数据岗位。',
+  },
+  {
+    keywords: ['城市', '机会', '片区'],
+    reply:
+      '从演示数据看，北京、上海、深圳和杭州的岗位数量较多；杭州和深圳在岗位增速及薪资平衡方面表现较好。',
+  },
+];
+function getReply(text) {
+  return (
+    replyRules.find((rule) => rule.keywords.some((word) => text.includes(word)))?.reply ||
+    '我已记录这个问题。静态原型阶段会返回本地演示答复，接入后端后可根据岗位数据库生成更精确的分析。'
+  );
+}
+export function createChatState() {
+  return {
+    conversations: [
+      { id: 'c1', title: '北京 Java 开发岗位', time: '10:30', messages: [...welcome] },
+      { id: 'c2', title: '上海薪资水平分析', time: '09:15', messages: [...welcome] },
+      { id: 'c3', title: '后端开发岗位趋势', time: '昨天', messages: [...welcome] },
+    ],
+    activeConversationId: 'c1',
+    draft: '',
+    get messages() {
+      return (
+        this.conversations.find((item) => item.id === this.activeConversationId)?.messages || []
+      );
+    },
+    sendMessage() {
+      const text = this.draft.trim();
+      if (!text) return false;
+      const now = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      this.messages.push(
+        { id: Date.now(), role: 'user', time: now, content: text },
+        { id: Date.now() + 1, role: 'assistant', time: now, content: getReply(text) },
+      );
+      this.draft = '';
+      return true;
+    },
+    selectSuggestion(text) {
+      this.draft = text;
+      return this.draft;
+    },
+    createConversation() {
+      const id = `c${Date.now()}`;
+      this.conversations.unshift({ id, title: '新建对话', time: '刚刚', messages: [...welcome] });
+      this.activeConversationId = id;
+      return id;
+    },
+    selectConversation(id) {
+      if (this.conversations.some((item) => item.id === id)) this.activeConversationId = id;
+      return this.activeConversationId;
+    },
+  };
+}

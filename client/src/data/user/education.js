@@ -1,0 +1,59 @@
+import { barOption, pieOption } from '../chartPresets.js';
+import { createAnalysisState, fields } from './analysisFactory.js';
+export const pageMeta = {
+  title: '学历层次分析',
+  description: '分析岗位对专科、本科和硕士等学历层次的要求',
+  meta: '演示数据 · 学历标准化口径',
+};
+export const filterFields = fields('education', 'category', 'city', 'range');
+export const defaultFilters = { education: '', category: '', city: '', range: '近一年' };
+export const charts = [
+  {
+    title: '学历岗位数量统计',
+    option: pieOption(['专科', '本科', '硕士', '不限'], [18, 57, 12, 13]),
+  },
+  {
+    title: '专科偏好岗位 TopN',
+    option: barOption(
+      ['技术支持', '运维专员', '测试助理', '实施顾问', '销售工程师'],
+      [4380, 3920, 3510, 2980, 2620],
+      '岗位数',
+      true,
+    ),
+  },
+  {
+    title: '本科偏好岗位 TopN',
+    option: barOption(
+      ['软件开发', '前端开发', '产品经理', '测试工程师', '数据分析'],
+      [16820, 10240, 7650, 6420, 5880],
+      '岗位数',
+      true,
+    ),
+  },
+  {
+    title: '硕士偏好岗位 TopN',
+    option: barOption(
+      ['算法工程师', '研究员', '数据科学家', 'AI工程师', '安全研究'],
+      [5230, 3180, 2860, 2540, 1980],
+      '岗位数',
+      true,
+    ),
+  },
+  {
+    title: '学历与岗位类别分布',
+    option: barOption(
+      ['开发类', '测试类', '算法类', '产品类', '运维类'],
+      [61, 18, 14, 22, 31],
+      '本科占比',
+    ),
+  },
+];
+export function createPageState() {
+  return createAnalysisState(defaultFilters);
+}
+export function handleSearch(state) {
+  return state.apply();
+}
+export function handleReset(state) {
+  return state.reset();
+}

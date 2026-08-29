@@ -1,0 +1,51 @@
+import { barOption, pieOption } from '../chartPresets.js';
+import { createAnalysisState, fields } from './analysisFactory.js';
+export const pageMeta = {
+  title: '专业细分方向分析',
+  description: '分析计算机类不同细分专业对应的就业方向',
+  meta: '演示数据 · 专业关键词识别',
+};
+export const filterFields = fields('major', 'category', 'city', 'range');
+export const defaultFilters = { major: '', category: '', city: '', range: '近一年' };
+export const charts = [
+  {
+    title: '细分专业对应岗位数量',
+    option: barOption(
+      ['软件工程', '人工智能', '大数据', '信息安全', '物联网工程'],
+      [32800, 14600, 13240, 9810, 7360],
+    ),
+  },
+  {
+    title: '专业方向岗位分布',
+    option: pieOption(
+      ['软件工程', '人工智能', '大数据', '信息安全', '物联网工程'],
+      [42, 19, 17, 13, 9],
+    ),
+  },
+  {
+    title: '明确专业要求岗位统计',
+    option: barOption(
+      ['软件工程', '计算机科学', '人工智能', '数据科学', '网络安全'],
+      [12600, 11400, 5280, 4860, 3920],
+      '岗位数',
+      true,
+    ),
+  },
+  {
+    title: '专业方向与岗位类别交叉分析',
+    option: barOption(
+      ['开发类', '算法类', '数据类', '安全类', '嵌入式'],
+      [84, 67, 63, 58, 49],
+      '匹配指数',
+    ),
+  },
+];
+export function createPageState() {
+  return createAnalysisState(defaultFilters);
+}
+export function handleSearch(state) {
+  return state.apply();
+}
+export function handleReset(state) {
+  return state.reset();
+}

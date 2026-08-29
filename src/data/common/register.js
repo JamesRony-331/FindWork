@@ -1,4 +1,0 @@
-export const registerFields = [{ key: 'username', label: '用户名', type: 'text', placeholder: '请输入 4–20 位用户名' }, { key: 'password', label: '密码', type: 'password', placeholder: '请输入至少 8 位密码' }, { key: 'confirmPassword', label: '确认密码', type: 'password', placeholder: '请再次输入密码' }, { key: 'contact', label: '联系方式', type: 'text', placeholder: '请输入手机号码' }]
-export function createRegisterForm() { return { username: '', password: '', confirmPassword: '', contact: '' } }
-export function validateRegister(form) { const errors = {}; if (!/^\w{4,20}$/.test(form.username)) errors.username = '用户名需为 4–20 位字母、数字或下划线'; if (form.password.length < 8) errors.password = '密码长度不能少于 8 位'; if (form.confirmPassword !== form.password) errors.confirmPassword = '两次输入的密码不一致'; if (!/^1\d{10}$/.test(form.contact)) errors.contact = '请输入正确的手机号码'; return errors }
-export function handleRegister(form) { return { ok: Object.keys(validateRegister(form)).length === 0, redirect: '/login' } }

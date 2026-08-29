@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wzbc.GoWorking.Mapper.UserMapper">
+    <insert id="insertUser">
+        INSERT INTO sys_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userPO.uuid != null and userPO.uuid != ''">uuid,</if>
+            <if test="userPO.nickname != null and userPO.nickname != ''">nickname,</if>
+            <if test="userPO.email != null and userPO.email != ''">email,</if>
+            <if test="userPO.sex != null">sex,</if>
+            <if test="userPO.avatar != null and userPO.avatar != ''">avatar,</if>
+            <if test="userPO.password != null and userPO.password != ''">password,</if>
+            <if test="userPO.createTime != null">CreatTime,</if>
+            <if test="userPO.isDelete != null">IsDelete,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userPO.uuid != null and userPO.uuid != ''">#{userPO.uuid},</if>
+            <if test="userPO.nickname != null and userPO.nickname != ''">#{userPO.nickname},</if>
+            <if test="userPO.email != null and userPO.email != ''">#{userPO.email},</if>
+            <if test="userPO.sex != null">#{userPO.sex},</if>
+            <if test="userPO.avatar != null and userPO.avatar != ''">#{userPO.avatar},</if>
+            <if test="userPO.password != null and userPO.password != ''">#{userPO.password},</if>
+            <if test="userPO.createTime != null">#{userPO.createTime},</if>
+            <if test="userPO.isDelete != null">#{userPO.isDelete},</if>
+        </trim>
+    </insert>
+
+    <update id="updateUser">
+        UPDATE sys_user
+        <set>
+            <if test="userPO.nickname != null and userPO.nickname != ''">nickname = #{userPO.nickname},</if>
+            <if test="userPO.email != null and userPO.email != ''">email = #{userPO.email},</if>
+            <if test="userPO.sex != null">sex = #{userPO.sex},</if>
+            <if test="userPO.avatar != null and userPO.avatar != ''">avatar = #{userPO.avatar},</if>
+            <if test="userPO.password != null and userPO.password != ''">password = #{userPO.password},</if>
+            <if test="userPO.isDelete != null">IsDelete = #{userPO.isDelete},</if>
+        </set>
+        WHERE uuid = #{userPO.uuid}
+    </update>
+
+    <select id="selectUserByEmail" resultType="com.wzbc.GoWorking.entity.PO.UserPO">
+        SELECT uuid,
+               nickname,
+               email,
+               sex,
+               avatar,
+               password,
+               CreatTime AS createTime,
+               IsDelete AS isDelete
+        FROM sys_user
+        WHERE email = #{email}
+    </select>
+
+</mapper>

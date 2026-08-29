@@ -1,0 +1,119 @@
+<script setup>
+import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { getRequestErrorMessage, register } from '../../api/auth.js';
+import PublicLayout from '../../layouts/PublicLayout.vue';
+import {
+  createRegisterPayload,
+  createRegisterForm,
+  registerFields,
+  validateRegister,
+} from '../../data/common/register';
+import { confirmDialog, showMessage } from '../../utils/dialog.js';
+const router = useRouter();
+const form = reactive(createRegisterForm());
+const errors = ref({});
+const submitting = ref(false);
+
+async function submit() {
+  errors.value = validateRegister(form);
+  if (Object.keys(errors.value).length > 0 || submitting.value) return;
+
+  const confirmed = await confirmDialog({
+    title: '确认注册',
+    message: `将使用邮箱 ${form.email.trim()} 创建账号，是否继续？`,
+    confirmText: '确认注册',
+  });
+  if (!confirmed) return;
+
+  submitting.value = true;
+  try {
+    const response = await register(createRegisterPayload(form));
+    if (response.code !== 200) {
+      await showMessage({ title: '注册失败', message: response.info || '请检查注册信息' });
+      return;
+    }
+
+    await showMessage({ title: '注册成功', message: '账号已创建，请使用新账号登录。' });
+    await router.push('/login');
+  } catch (error) {
+    await showMessage({ title: '无法注册', message: getRequestErrorMessage(error) });
+  } finally {
+    submitting.value = false;
+  }
+}
+</script>
+<template>
+  <PublicLayout>
+    <div class="register-page">
+      <form class="register-card" @submit.prevent="submit">
+        <header>
+          <h1>用户注册</h1>
+          <p>创建普通用户账号，开始查看就业数据</p>
+        </header>
+        <label v-for="field in registerFields" :key="field.key">
+          <span class="field-label">{{ field.label }}</span>
+          <input
+            v-model="form[field.key]"
+            class="input"
+            :type="field.type"
+            :placeholder="field.placeholder"
+          />
+          <span class="field-error">{{ errors[field.key] }}</span>
+        </label>
+        <button class="button button-primary submit" type="submit" :disabled="submitting">
+          {{ submitting ? '注册中…' : '注册账号' }}
+        </button>
+        <p class="auth-switch">
+          已有账号？
+          <router-link to="/login">前往登录</router-link>
+        </p>
+      </form>
+    </div>
+  </PublicLayout>
+</template>
+<style scoped>
+.register-page {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 68px);
+  padding: 42px 20px;
+}
+.register-card {
+  width: min(100%, 480px);
+  padding: 34px 38px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-float);
+}
+header {
+  margin-bottom: 24px;
+}
+h1 {
+  font-size: 24px;
+  color: var(--color-primary-900);
+}
+header p {
+  margin-top: 5px;
+  color: var(--color-text-secondary);
+}
+.submit {
+  width: 100%;
+  margin-top: 4px;
+}
+.auth-switch {
+  margin-top: 18px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+.auth-switch a {
+  color: var(--color-info);
+}
+@media (max-width: 560px) {
+  .register-card {
+    padding: 28px 22px;
+  }
+}
+</style>
