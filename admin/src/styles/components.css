@@ -15,7 +15,7 @@
   border: 1px solid transparent;
   border-radius: var(--radius-control);
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-surface);
   font-size: var(--font-size-body);
   font-weight: 600;
   line-height: 1;
@@ -23,7 +23,7 @@
 }
 
 .button:hover:not(:disabled) {
-  background: #066b67;
+  background: var(--color-primary);
 }
 
 .button:disabled {
@@ -38,7 +38,7 @@
 
 .button--secondary:hover:not(:disabled) {
   border-color: var(--color-primary);
-  background: #f0f8f7;
+  background: var(--color-surface);
   color: var(--color-primary);
 }
 
@@ -47,7 +47,7 @@
 }
 
 .button--danger:hover:not(:disabled) {
-  background: #b63e3e;
+  background: var(--color-danger);
 }
 
 .field {
@@ -73,7 +73,7 @@
 }
 
 .field__control:hover {
-  border-color: #b8c8cd;
+  border-color: var(--color-muted);
 }
 
 .field__control:focus {
@@ -108,22 +108,22 @@
 }
 
 .status--success {
-  background: #e9f6f0;
+  background: var(--color-page);
   color: var(--color-success);
 }
 
 .status--warning {
-  background: #fdf3e4;
+  background: var(--color-page);
   color: var(--color-warning);
 }
 
 .status--danger {
-  background: #fbeded;
+  background: var(--color-page);
   color: var(--color-danger);
 }
 
 .status--info {
-  background: #edf5f8;
+  background: var(--color-page);
   color: var(--color-info);
 }
 

@@ -29,6 +29,6 @@
 
   --radius-control: 6px;
   --radius-panel: 10px;
-  --shadow-panel: 0 1px 2px rgb(9 59 75 / 4%);
-  --focus-ring: 0 0 0 3px rgb(8 127 122 / 22%);
+  --shadow-panel: 0 1px 2px var(--color-border);
+  --focus-ring: 0 0 0 3px var(--color-primary);
 }
