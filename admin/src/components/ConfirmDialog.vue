@@ -61,7 +61,7 @@ watch(() => props.open, async (isOpen) => {
   } else {
     restoreFocus()
   }
-})
+}, { immediate: true })
 
 onBeforeUnmount(restoreFocus)
 </script>

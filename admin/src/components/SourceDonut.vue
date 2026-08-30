@@ -9,8 +9,15 @@ const props = defineProps({
 
 const colors = ['var(--color-primary)', 'var(--color-info)', 'var(--color-success)', 'var(--color-warning)']
 const headingId = useId()
-const total = computed(() => props.rows.reduce((sum, row) => sum + (Number(row.value) || 0), 0))
-const rowsWithPercent = computed(() => props.rows.map((row) => ({ ...row, percent: toPercent(Number(row.value), total.value) })))
+
+function normalizeSourceValue(value) {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : 0
+}
+
+const normalizedRows = computed(() => props.rows.map((row) => ({ ...row, value: normalizeSourceValue(row.value) })))
+const total = computed(() => normalizedRows.value.reduce((sum, row) => sum + row.value, 0))
+const rowsWithPercent = computed(() => normalizedRows.value.map((row) => ({ ...row, percent: toPercent(row.value, total.value) })))
 const donutStyle = computed(() => {
   let start = 0
   const segments = rowsWithPercent.value.map((row, index) => {
