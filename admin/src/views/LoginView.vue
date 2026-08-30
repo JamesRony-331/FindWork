@@ -6,7 +6,7 @@ import { createDemoSession } from '../utils/demoSession.js'
 const router = useRouter()
 const username = ref('')
 const password = ref('')
-const remember = ref(true)
+const remember = ref(false)
 const isPasswordVisible = ref(false)
 const errors = reactive({ username: '', password: '' })
 

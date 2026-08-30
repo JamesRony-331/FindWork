@@ -12,4 +12,5 @@ test('login view exposes the approved form controls and inline feedback', () => 
   assert.match(view, /aria-live="polite"/)
   assert.match(view, /createDemoSession/)
   assert.match(view, /router\.replace\('\/dashboard'\)/)
+  assert.match(view, /const remember = ref\(false\)/)
 })
