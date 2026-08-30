@@ -5,7 +5,8 @@ import { clearDemoSession, createDemoSession } from '../src/utils/demoSession.js
 
 test('admin routes expose login and dashboard only', () => {
   assert.ok(routes.some((route) => route.path === '/login'))
-  assert.ok(routes.some((route) => route.path === '/dashboard'))
+  const protectedLayout = routes.find((route) => route.meta?.requiresAuth)
+  assert.ok(protectedLayout?.children?.some((route) => route.path === '/dashboard'))
   assert.equal(routes.filter((route) => route.meta?.requiresAuth).length, 1)
 })
 

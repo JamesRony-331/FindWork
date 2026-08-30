@@ -1,13 +1,19 @@
 import { createMemoryHistory, createRouter, createWebHistory } from 'vue-router'
 import { isDemoAuthenticated } from '../utils/demoSession.js'
 
-const DashboardPlaceholder = {
+const ViewPlaceholder = {
   template: '<main aria-label="招聘数据管理大屏"></main>',
 }
 
 const LoginView = typeof window === 'undefined'
-  ? DashboardPlaceholder
+  ? ViewPlaceholder
   : () => import('../views/LoginView.vue')
+const AdminLayout = typeof window === 'undefined'
+  ? ViewPlaceholder
+  : () => import('../layouts/AdminLayout.vue')
+const DashboardView = typeof window === 'undefined'
+  ? ViewPlaceholder
+  : () => import('../views/DashboardView.vue')
 
 export const routes = [
   {
@@ -20,10 +26,16 @@ export const routes = [
     component: LoginView,
   },
   {
-    path: '/dashboard',
-    name: 'AdminDashboard',
-    component: DashboardPlaceholder,
+    path: '/',
+    component: AdminLayout,
     meta: { requiresAuth: true },
+    children: [
+      {
+        path: '/dashboard',
+        name: 'AdminDashboard',
+        component: DashboardView,
+      },
+    ],
   },
 ]
 

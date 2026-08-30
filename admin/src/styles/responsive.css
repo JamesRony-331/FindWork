@@ -1,0 +1,139 @@
+@media (max-width: 1100px) {
+  #app .admin-shell .admin-sidebar {
+    width: 72px;
+  }
+
+  #app .admin-shell .admin-shell__workspace {
+    padding-left: 72px;
+  }
+
+  #app .admin-shell .admin-sidebar__brand,
+  #app .admin-shell .admin-sidebar__item {
+    padding-right: var(--space-6);
+    padding-left: var(--space-6);
+  }
+
+  #app .admin-shell .admin-sidebar__brand-text,
+  #app .admin-shell .admin-sidebar__label,
+  #app .admin-shell .admin-sidebar__badge {
+    display: none;
+  }
+
+  #app .dashboard-view .dashboard-grid--primary {
+    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 1fr);
+  }
+
+  #app .admin-shell .admin-header__updated .app-icon {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  #app .admin-shell .admin-header__updated {
+    display: none;
+  }
+
+  #app .dashboard-view .dashboard-grid--primary,
+  #app .dashboard-view .dashboard-grid--secondary,
+  #app .dashboard-view .dashboard-grid--operations {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  #app .admin-shell .admin-sidebar,
+  #app .admin-shell.admin-shell--collapsed .admin-sidebar {
+    width: 224px;
+    transform: translateX(-100%);
+  }
+
+  #app .admin-shell.admin-shell--mobile-open .admin-sidebar {
+    transform: translateX(0);
+  }
+
+  #app .admin-shell .admin-sidebar__brand,
+  #app .admin-shell .admin-sidebar__item,
+  #app .admin-shell.admin-shell--collapsed .admin-sidebar__brand,
+  #app .admin-shell.admin-shell--collapsed .admin-sidebar__item {
+    padding-right: var(--space-6);
+    padding-left: var(--space-6);
+  }
+
+  #app .admin-shell .admin-sidebar__brand-text,
+  #app .admin-shell .admin-sidebar__label,
+  #app .admin-shell .admin-sidebar__badge,
+  #app .admin-shell.admin-shell--collapsed .admin-sidebar__brand-text,
+  #app .admin-shell.admin-shell--collapsed .admin-sidebar__label,
+  #app .admin-shell.admin-shell--collapsed .admin-sidebar__badge {
+    display: initial;
+  }
+
+  #app .admin-shell .admin-shell__workspace,
+  #app .admin-shell.admin-shell--collapsed .admin-shell__workspace {
+    padding-left: 0;
+  }
+
+  #app .admin-shell .admin-header {
+    padding: 0 var(--space-4);
+  }
+
+  #app .admin-shell .admin-header__leading {
+    gap: var(--space-3);
+  }
+
+  #app .admin-shell .admin-header__user,
+  #app .admin-shell .admin-header__logout .app-icon {
+    display: none;
+  }
+
+  #app .admin-shell .admin-main {
+    padding: var(--space-4);
+  }
+
+  #app .dashboard-view .dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #app .dashboard-view .dashboard-grid--primary,
+  #app .dashboard-view .dashboard-grid--secondary,
+  #app .dashboard-view .dashboard-grid--operations {
+    grid-template-columns: 1fr;
+  }
+
+  #app .dashboard-view .dashboard-table__scroll {
+    overflow-x: auto;
+  }
+
+  #app .dashboard-view .dashboard-table table {
+    min-width: 640px;
+  }
+
+  #app .dashboard-view .dashboard-activity table {
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 480px) {
+  #app .admin-shell .admin-breadcrumbs span:first-child,
+  #app .admin-shell .admin-breadcrumbs span[aria-hidden='true'] {
+    display: none;
+  }
+
+  #app .dashboard-view .dashboard-heading {
+    min-height: auto;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  #app .dashboard-view .dashboard-heading h1 {
+    font-size: 21px;
+  }
+
+  #app .dashboard-view .dashboard-heading__demo {
+    flex: 0 0 auto;
+  }
+
+  #app .dashboard-view .dashboard-metrics {
+    grid-template-columns: 1fr;
+  }
+}
