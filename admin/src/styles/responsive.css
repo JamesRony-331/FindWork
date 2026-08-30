@@ -1,6 +1,6 @@
 @media (max-width: 1100px) {
   #app .dashboard-view .dashboard-grid--primary {
-    grid-template-columns: minmax(0, 1.3fr) minmax(280px, 1fr);
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 1fr);
   }
 
   #app .admin-shell .admin-header__updated .app-icon {

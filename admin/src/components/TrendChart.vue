@@ -7,7 +7,7 @@ const props = defineProps({
   title: { type: String, required: true },
 })
 
-const chartWidth = 320
+const chartWidth = 560
 const chartHeight = 156
 const chartPadding = 18
 const headingId = useId()
@@ -28,9 +28,12 @@ const summary = computed(() => props.rows.map((row) => `${row.label} ${row.value
       role="img"
       :aria-label="`${title}：${summary}`"
     >
-      <path d="M18 30H302M18 78H302M18 126H302" class="trend-chart__grid" />
+      <path d="M18 30H542M18 78H542M18 126H542" class="trend-chart__grid" />
       <polyline :points="points" class="trend-chart__line" />
-      <circle v-for="(row, index) in rows" :key="row.id" :cx="coordinates[index]?.x" :cy="coordinates[index]?.y" r="3" class="trend-chart__point" />
+      <g v-for="(row, index) in rows" :key="row.id">
+        <text :x="coordinates[index]?.x" :y="Math.max(Number(coordinates[index]?.y) - 9, 12)" class="trend-chart__point-value">{{ row.value }}</text>
+        <circle :cx="coordinates[index]?.x" :cy="coordinates[index]?.y" r="3" class="trend-chart__point" />
+      </g>
     </svg>
     <ul class="trend-chart__values" :aria-label="`${title}数据列表`">
       <li v-for="row in rows" :key="row.id"><span>{{ row.label }}</span><strong>{{ row.value }}</strong></li>
@@ -58,6 +61,7 @@ const summary = computed(() => props.rows.map((row) => `${row.label} ${row.value
 .trend-chart__grid {
   fill: none;
   stroke: var(--color-border);
+  stroke-dasharray: 4 4;
   stroke-width: 1;
 }
 
@@ -70,9 +74,15 @@ const summary = computed(() => props.rows.map((row) => `${row.label} ${row.value
 }
 
 .trend-chart__point {
-  fill: var(--color-surface);
+  fill: currentColor;
   stroke: currentColor;
   stroke-width: 2;
+}
+
+.trend-chart__point-value {
+  fill: var(--color-text);
+  font-size: 9px;
+  text-anchor: middle;
 }
 
 .trend-chart__values {
@@ -89,7 +99,15 @@ const summary = computed(() => props.rows.map((row) => `${row.label} ${row.value
 }
 
 .trend-chart__values strong {
-  color: var(--color-text);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

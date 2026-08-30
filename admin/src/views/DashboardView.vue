@@ -157,7 +157,7 @@ import {
 }
 
 .dashboard-grid--primary {
-  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(380px, 1fr);
 }
 
 .dashboard-grid--secondary,
@@ -173,10 +173,6 @@ import {
 .dashboard-grid--primary :deep(.source-donut) {
   gap: var(--space-2);
   padding: var(--space-4);
-}
-
-.dashboard-grid--primary :deep(.trend-chart__graphic) {
-  height: 150px;
 }
 
 .dashboard-grid--secondary :deep(.horizontal-bars),

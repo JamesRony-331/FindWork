@@ -71,7 +71,7 @@ const summary = computed(() => rowsWithPercent.value.map((row) => `${row.label} 
 
 .source-donut__chart {
   display: grid;
-  width: min(100%, 176px);
+  width: min(100%, 188px);
   aspect-ratio: 1;
   place-items: center;
   margin: 0 auto;
@@ -117,7 +117,7 @@ const summary = computed(() => rowsWithPercent.value.map((row) => `${row.label} 
 .source-donut__marker {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: 2px;
 }
 
 @media (max-width: 440px) {

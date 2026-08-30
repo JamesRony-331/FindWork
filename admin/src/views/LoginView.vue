@@ -57,6 +57,18 @@ function submitLogin() {
         <div class="login-visual__records">
           <span></span><span></span><span></span><span></span>
         </div>
+        <svg class="login-visual__lower-grid" viewBox="0 0 300 180" role="presentation">
+          <path d="M0 24H300M0 68H300M0 112H300M0 156H300M42 0V180M96 0V180M150 0V180M204 0V180M258 0V180" />
+        </svg>
+        <svg class="login-visual__briefcase" viewBox="0 0 84 72" role="presentation">
+          <rect x="8" y="24" width="68" height="40" rx="4" />
+          <path d="M28 24v-8c0-4 3-7 7-7h14c4 0 7 3 7 7v8M8 40h68M36 37v7h12v-7" />
+        </svg>
+        <svg class="login-visual__resume" viewBox="0 0 104 128" role="presentation">
+          <path d="M14 4h54l22 22v98H14zM68 4v22h22" />
+          <circle cx="38" cy="49" r="10" />
+          <path d="M24 72c3-9 8-13 14-13s11 4 14 13M24 88h56M24 104h46" />
+        </svg>
       </div>
     </section>
 
@@ -164,7 +176,7 @@ function submitLogin() {
 .login-visual__brand {
   position: relative;
   z-index: 1;
-  padding: clamp(72px, 18vh, 160px) clamp(48px, 9vw, 128px) 0;
+  padding: clamp(72px, 18vh, 160px) clamp(48px, 5.55vw, 80px) 0;
 }
 
 .login-visual__title {
@@ -189,15 +201,15 @@ function submitLogin() {
 
 .login-visual__dashboard {
   position: absolute;
-  right: clamp(32px, 8vw, 128px);
-  bottom: clamp(44px, 9vh, 108px);
-  left: clamp(32px, 7vw, 112px);
-  min-height: 400px;
+  right: clamp(40px, 6.25vw, 90px);
+  bottom: 0;
+  left: clamp(40px, 5.55vw, 80px);
+  min-height: 540px;
 }
 
 .login-visual__donut {
   position: absolute;
-  top: 8px;
+  top: 34px;
   left: 0;
   width: 110px;
   aspect-ratio: 1;
@@ -227,7 +239,7 @@ function submitLogin() {
 
 .login-visual__legend {
   position: absolute;
-  top: 30px;
+  top: 54px;
   left: 150px;
   display: grid;
   gap: 16px;
@@ -274,7 +286,7 @@ function submitLogin() {
 
 .login-visual__bars {
   position: absolute;
-  bottom: 80px;
+  bottom: 210px;
   left: 0;
   display: flex;
   align-items: end;
@@ -306,7 +318,7 @@ function submitLogin() {
 .login-visual__records {
   position: absolute;
   right: 36px;
-  bottom: 82px;
+  bottom: 230px;
   display: grid;
   gap: 16px;
   width: min(48%, 280px);
@@ -328,6 +340,38 @@ function submitLogin() {
   height: 15px;
   content: '';
   background: var(--color-primary);
+}
+
+.login-visual__lower-grid,
+.login-visual__briefcase,
+.login-visual__resume {
+  position: absolute;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.login-visual__lower-grid {
+  bottom: -8px;
+  left: -80px;
+  width: 300px;
+  stroke-width: 1;
+  opacity: 0.7;
+}
+
+.login-visual__briefcase {
+  bottom: 96px;
+  left: 34px;
+  width: 70px;
+  stroke-width: 2.5;
+}
+
+.login-visual__resume {
+  bottom: 62px;
+  left: min(43%, 286px);
+  width: 86px;
+  stroke-width: 2.5;
 }
 
 .login-form-area {
@@ -359,8 +403,12 @@ function submitLogin() {
 
 .login-form {
   display: grid;
-  gap: var(--space-5);
+  gap: 28px;
   margin-top: 36px;
+}
+
+.login-page .field__control {
+  min-height: 52px;
 }
 
 .login-password-control {

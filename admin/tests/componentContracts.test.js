@@ -15,7 +15,7 @@ function destructureImport(specifiers) {
   }).join(', ')
 }
 
-function compileComponent(name) {
+function compileComponent(name, components = {}) {
   const filename = `src/components/${name}`
   const { descriptor, errors } = parse(source(name), { filename })
   assert.deepEqual(errors, [], `${name} should parse as an SFC`)
@@ -32,9 +32,10 @@ function compileComponent(name) {
   const replaceImports = (code) => code
     .replace(/^import \{([^}]+)\} from ['"]vue['"]\s*$/gm, (_, imports) => `const { ${destructureImport(imports)} } = Vue`)
     .replace(/^import \{([^}]+)\} from ['"]\.\.\/utils\/dashboard\.js['"]\s*$/gm, (_, imports) => `const { ${destructureImport(imports)} } = DashboardUtils`)
+    .replace(/^import AppIcon from ['"]\.\/AppIcon\.vue['"]\s*$/gm, 'const AppIcon = Components.AppIcon')
 
   const executable = `${replaceImports(script.content)}\n${replaceImports(template.code).replace('export function render', 'function render')}\n__sfc__.render = render\nreturn __sfc__`
-  return new Function('Vue', 'DashboardUtils', executable)(Vue, dashboardUtils)
+  return new Function('Vue', 'DashboardUtils', 'Components', executable)(Vue, dashboardUtils, components)
 }
 
 function createNode(type, text = '') {
@@ -121,15 +122,17 @@ test('dashboard sources retain supplementary accessibility contracts', () => {
 
 test('icon, metric card, and status tag render their prop-driven indicators', () => {
   const AppIcon = compileComponent('AppIcon.vue')
-  const MetricCard = compileComponent('MetricCard.vue')
+  const MetricCard = compileComponent('MetricCard.vue', { AppIcon })
   const StatusTag = compileComponent('StatusTag.vue')
 
   const icon = mount(AppIcon, { name: 'dashboard' })
   assert.equal(findNode(icon.root, (node) => node.type === 'svg').props.class, 'app-icon')
   assert.equal(descendants(icon.root).filter((node) => node.type === 'rect').length, 4)
 
-  const metric = mount(MetricCard, { metric: { label: '岗位数', value: 12480, unit: '条', change: -4.2, changeLabel: '较昨日' } })
+  const metric = mount(MetricCard, { metric: { id: 'pending-cleanup', label: '岗位数', value: 12480, unit: '条', change: -4.2, changeLabel: '较昨日' } })
   assert.match(nodeText(metric.root), /岗位数12,480条↓ 4.2% 较昨日/)
+  assert.ok(findNode(metric.root, (node) => node.props.class === 'metric-card__icon metric-card__icon--warning'))
+  assert.ok(findNode(metric.root, (node) => node.type === 'svg' && node.props.class === 'app-icon'))
 
   const status = mount(StatusTag, { status: 'failed', label: '执行失败' })
   const tag = findNode(status.root, (node) => node.props.class === 'status status--danger')
@@ -143,11 +146,11 @@ test('trend chart handles empty, single, and flat series without hiding values',
   assert.equal(findNode(empty.root, (node) => node.type === 'polyline').props.points, '')
 
   const single = mount(TrendChart, { title: '趋势', rows: [{ id: 'one', label: '08-30', value: 12 }] })
-  assert.equal(findNode(single.root, (node) => node.type === 'polyline').props.points, '160,78')
+  assert.equal(findNode(single.root, (node) => node.type === 'polyline').props.points, '280,78')
   assert.match(nodeText(single.root), /08-3012/)
 
   const flat = mount(TrendChart, { title: '趋势', rows: [{ id: 'a', label: 'A', value: 3 }, { id: 'b', label: 'B', value: 3 }] })
-  assert.equal(findNode(flat.root, (node) => node.type === 'polyline').props.points, '18,78 302,78')
+  assert.equal(findNode(flat.root, (node) => node.type === 'polyline').props.points, '18,78 542,78')
 })
 
 test('source donut normalizes zero, negative, and non-finite source values', () => {
