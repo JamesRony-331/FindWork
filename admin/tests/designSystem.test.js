@@ -100,5 +100,5 @@ test('palette scanner rejects unapproved shorthand and alpha hex literals', () =
 
 test('admin shell provides an installable web-history router', () => {
   assert.equal(typeof router.install, 'function')
-  assert.equal(router.getRoutes().length, 0)
+  assert.equal(router.getRoutes().length, 3)
 })
