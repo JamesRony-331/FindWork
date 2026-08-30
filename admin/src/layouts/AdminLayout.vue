@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
@@ -14,7 +14,12 @@ const viewportWidth = ref(typeof window === 'undefined' ? 1440 : window.innerWid
 const collapsed = ref(viewportWidth.value <= 1100)
 const mobileOpen = ref(false)
 const logoutOpen = ref(false)
+const navigationRef = ref(null)
+const menuButtonRef = ref(null)
 const administrator = readDemoSession()?.username || '管理员'
+const isMobileNavigation = computed(() => viewportWidth.value <= 720)
+const navigationHidden = computed(() => isMobileNavigation.value && !mobileOpen.value)
+const workspaceHidden = computed(() => isMobileNavigation.value && mobileOpen.value)
 const navigationExpanded = computed(() => navigationPresentation({
   collapsed: collapsed.value,
   mobileOpen: mobileOpen.value,
@@ -37,7 +42,19 @@ onMounted(() => window.addEventListener('resize', updateViewportWidth))
 onBeforeUnmount(() => window.removeEventListener('resize', updateViewportWidth))
 
 watch(() => route.fullPath, () => {
-  mobileOpen.value = false
+  closeMobileNavigation()
+})
+
+watch(mobileOpen, async (isOpen) => {
+  if (!isMobileNavigation.value) return
+  await nextTick()
+
+  if (isOpen) {
+    navigationRef.value?.querySelector('a, button, [tabindex]:not([tabindex="-1"])')?.focus()
+    return
+  }
+
+  menuButtonRef.value?.focus()
 })
 
 function toggleNavigation() {
@@ -48,6 +65,16 @@ function toggleNavigation() {
 
   collapsed.value = nextState.collapsed
   mobileOpen.value = nextState.mobileOpen
+}
+
+function closeMobileNavigation() {
+  if (mobileOpen.value) mobileOpen.value = false
+}
+
+function handleShellKeydown(event) {
+  if (event.key !== 'Escape' || !mobileOpen.value || !isMobileNavigation.value) return
+  event.preventDefault()
+  closeMobileNavigation()
 }
 
 function confirmLogout() {
@@ -61,8 +88,16 @@ function confirmLogout() {
   <div
     class="admin-shell"
     :class="{ 'admin-shell--collapsed': collapsed, 'admin-shell--mobile-open': mobileOpen }"
+    @keydown="handleShellKeydown"
   >
-    <aside id="admin-navigation" class="admin-sidebar" aria-label="管理端主导航">
+    <aside
+      id="admin-navigation"
+      ref="navigationRef"
+      class="admin-sidebar"
+      aria-label="管理端主导航"
+      :inert="navigationHidden ? '' : undefined"
+      :aria-hidden="navigationHidden ? 'true' : undefined"
+    >
       <div class="admin-sidebar__brand">
         <span class="admin-sidebar__mark" aria-hidden="true">G</span>
         <strong class="admin-sidebar__brand-text">GoWorking 管理端</strong>
@@ -75,7 +110,7 @@ function confirmLogout() {
             class="admin-sidebar__item admin-sidebar__item--active"
             :to="item.to"
             :title="collapsed ? item.label : undefined"
-            @click="mobileOpen = false"
+            @click="closeMobileNavigation"
           >
             <AppIcon :name="item.icon" />
             <span class="admin-sidebar__label">{{ item.label }}</span>
@@ -99,13 +134,18 @@ function confirmLogout() {
       class="admin-shell__scrim"
       type="button"
       aria-label="关闭导航"
-      @click="mobileOpen = false"
+      @click="closeMobileNavigation"
     ></button>
 
-    <div class="admin-shell__workspace">
+    <div
+      class="admin-shell__workspace"
+      :inert="workspaceHidden ? '' : undefined"
+      :aria-hidden="workspaceHidden ? 'true' : undefined"
+    >
       <header class="admin-header">
         <div class="admin-header__leading">
           <button
+            ref="menuButtonRef"
             class="admin-header__menu"
             type="button"
             aria-controls="admin-navigation"

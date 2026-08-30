@@ -7,6 +7,10 @@ const props = defineProps({
 })
 
 const formattedValue = computed(() => new Intl.NumberFormat('zh-CN').format(props.metric.value ?? 0))
+const formattedChange = computed(() => {
+  const value = Math.abs(Number(props.metric.change) || 0)
+  return props.metric.changeUnit === '%' ? `${value}%` : `${value} ${props.metric.changeUnit ?? ''}`.trim()
+})
 const changeClass = computed(() => Number(props.metric.change) < 0 ? 'metric-card__change--down' : 'metric-card__change--up')
 const metricPresentation = computed(() => ({
   'job-count': { icon: 'briefcase', tone: 'primary' },
@@ -27,8 +31,8 @@ const metricPresentation = computed(() => ({
         {{ formattedValue }}<span v-if="metric.unit" class="metric-card__unit">{{ metric.unit }}</span>
       </p>
       <p class="metric-card__change" :class="changeClass">
-        <span aria-hidden="true">{{ Number(metric.change) < 0 ? '↓' : '↑' }}</span>
-        {{ Math.abs(Number(metric.change) || 0) }}% {{ metric.changeLabel }}
+        <span class="metric-card__change-indicator" aria-hidden="true">{{ Number(metric.change) < 0 ? '↓' : '↑' }}</span>
+        {{ formattedChange }} {{ metric.changeLabel }}
       </p>
     </div>
   </article>
@@ -94,15 +98,20 @@ const metricPresentation = computed(() => ({
 }
 
 .metric-card__change {
+  color: var(--color-text);
   font-size: var(--font-size-caption);
   font-weight: 600;
 }
 
 .metric-card__change--up {
-  color: var(--color-success);
+  --metric-change-indicator: var(--color-success);
 }
 
 .metric-card__change--down {
-  color: var(--color-danger);
+  --metric-change-indicator: var(--color-danger);
+}
+
+.metric-card__change-indicator {
+  color: var(--metric-change-indicator);
 }
 </style>

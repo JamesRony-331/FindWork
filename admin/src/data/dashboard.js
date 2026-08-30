@@ -13,6 +13,7 @@ export const metrics = [
     value: 12480,
     unit: '条',
     change: 12.6,
+    changeUnit: '%',
     changeLabel: '较上周',
   },
   {
@@ -21,6 +22,7 @@ export const metrics = [
     value: 2864,
     unit: '人',
     change: 8.4,
+    changeUnit: '%',
     changeLabel: '较上周',
   },
   {
@@ -29,6 +31,7 @@ export const metrics = [
     value: 736,
     unit: '条',
     change: -4.2,
+    changeUnit: '%',
     changeLabel: '较昨日',
   },
   {
@@ -37,6 +40,7 @@ export const metrics = [
     value: 18,
     unit: '项',
     change: 2,
+    changeUnit: '项',
     changeLabel: '进行中',
   },
 ]

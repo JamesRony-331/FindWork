@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 import * as Vue from 'vue'
+import { metrics } from '../src/data/dashboard.js'
 import { toPercent, toPolylinePoints } from '../src/utils/dashboard.js'
 
 const source = (name) => readFileSync(new URL(`../src/components/${name}`, import.meta.url), 'utf8')
@@ -129,7 +130,7 @@ test('icon, metric card, and status tag render their prop-driven indicators', ()
   assert.equal(findNode(icon.root, (node) => node.type === 'svg').props.class, 'app-icon')
   assert.equal(descendants(icon.root).filter((node) => node.type === 'rect').length, 4)
 
-  const metric = mount(MetricCard, { metric: { id: 'pending-cleanup', label: '岗位数', value: 12480, unit: '条', change: -4.2, changeLabel: '较昨日' } })
+  const metric = mount(MetricCard, { metric: { id: 'pending-cleanup', label: '岗位数', value: 12480, unit: '条', change: -4.2, changeUnit: '%', changeLabel: '较昨日' } })
   assert.match(nodeText(metric.root), /岗位数12,480条↓ 4.2% 较昨日/)
   assert.ok(findNode(metric.root, (node) => node.props.class === 'metric-card__icon metric-card__icon--warning'))
   assert.ok(findNode(metric.root, (node) => node.type === 'svg' && node.props.class === 'app-icon'))
@@ -137,6 +138,17 @@ test('icon, metric card, and status tag render their prop-driven indicators', ()
   const status = mount(StatusTag, { status: 'failed', label: '执行失败' })
   const tag = findNode(status.root, (node) => node.props.class === 'status status--danger')
   assert.equal(tag.props['aria-label'], '状态：执行失败')
+})
+
+test('today task metric renders its change as an item count', () => {
+  const AppIcon = compileComponent('AppIcon.vue')
+  const MetricCard = compileComponent('MetricCard.vue', { AppIcon })
+  const todayTasks = metrics.find((metric) => metric.id === 'today-tasks')
+  const metric = mount(MetricCard, { metric: todayTasks })
+
+  assert.equal(todayTasks.changeUnit, '项')
+  assert.match(nodeText(metric.root), /↑ 2 项 进行中/)
+  assert.doesNotMatch(nodeText(metric.root), /2%/)
 })
 
 test('trend chart handles empty, single, and flat series without hiding values', () => {

@@ -92,7 +92,9 @@
 }
 
 .field__error {
-  color: var(--color-danger);
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--color-danger);
+  color: var(--color-text);
 }
 
 .status {
@@ -102,29 +104,30 @@
   min-height: 24px;
   padding: 0 var(--space-2);
   border-radius: var(--radius-control);
+  color: var(--color-text);
   font-size: var(--font-size-caption);
   font-weight: 600;
   line-height: 1;
 }
 
 .status--success {
+  --status-indicator: var(--color-success);
   background: var(--color-page);
-  color: var(--color-success);
 }
 
 .status--warning {
+  --status-indicator: var(--color-warning);
   background: var(--color-page);
-  color: var(--color-warning);
 }
 
 .status--danger {
+  --status-indicator: var(--color-danger);
   background: var(--color-page);
-  color: var(--color-danger);
 }
 
 .status--info {
+  --status-indicator: var(--color-info);
   background: var(--color-page);
-  color: var(--color-info);
 }
 
 .sr-only {

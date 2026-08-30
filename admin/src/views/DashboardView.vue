@@ -121,7 +121,7 @@ import {
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--color-info);
   border-radius: var(--radius-control);
-  color: var(--color-info);
+  color: var(--color-text);
   font-size: var(--font-size-caption);
   font-weight: 600;
 }
@@ -147,7 +147,7 @@ import {
   position: absolute;
   right: var(--space-5);
   bottom: var(--space-3);
-  color: var(--color-weak);
+  color: var(--color-text);
   font-size: var(--font-size-caption);
 }
 
@@ -259,12 +259,13 @@ import {
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
   padding: var(--space-2) var(--space-1) 0;
+  border-left: 2px solid var(--color-danger);
   color: var(--color-muted);
   font-size: var(--font-size-caption);
 }
 
 .dashboard-alerts strong,
 .dashboard-alerts b {
-  color: var(--color-danger);
+  color: var(--color-text);
 }
 </style>
