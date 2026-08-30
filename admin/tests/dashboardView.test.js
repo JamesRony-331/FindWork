@@ -21,6 +21,8 @@ test('admin layout exposes responsive navigation and logout confirmation', () =>
 
   assert.match(layout, /collapsed/)
   assert.match(layout, /mobileOpen/)
+  assert.match(layout, /:aria-expanded="navigationExpanded"/)
+  assert.match(layout, /:aria-label="navigationToggleLabel"/)
   assert.match(layout, /GoWorking 管理端/)
   assert.match(layout, /首页/)
   assert.match(layout, /数据更新/)
@@ -36,4 +38,11 @@ test('responsive stylesheet covers desktop collapse, mobile drawer, and narrow m
   assert.match(css, /@media\s*\(max-width:\s*720px\)/)
   assert.match(css, /@media\s*\(max-width:\s*480px\)/)
   assert.match(css, /overflow-x:\s*auto/)
+})
+
+test('tablet breakpoint leaves sidebar geometry to the collapsed state class', () => {
+  const css = source('styles/responsive.css')
+  const tabletRules = css.match(/@media\s*\(max-width:\s*1100px\)([\s\S]*?)@media\s*\(max-width:\s*860px\)/)?.[1] ?? ''
+
+  assert.doesNotMatch(tabletRules, /admin-sidebar|admin-shell__workspace|admin-sidebar__label/)
 })

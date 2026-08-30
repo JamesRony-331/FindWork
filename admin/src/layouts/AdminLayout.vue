@@ -1,30 +1,53 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { dashboardMeta } from '../data/dashboard.js'
 import { adminNavigation } from '../data/navigation.js'
 import { clearDemoSession, readDemoSession } from '../utils/demoSession.js'
+import { navigationPresentation, toggleNavigationState } from '../utils/navigationState.js'
 
 const route = useRoute()
 const router = useRouter()
-const collapsed = ref(typeof window !== 'undefined' && window.matchMedia?.('(max-width: 1100px)').matches)
+const viewportWidth = ref(typeof window === 'undefined' ? 1440 : window.innerWidth)
+const collapsed = ref(viewportWidth.value <= 1100)
 const mobileOpen = ref(false)
 const logoutOpen = ref(false)
 const administrator = readDemoSession()?.username || '管理员'
+const navigationExpanded = computed(() => navigationPresentation({
+  collapsed: collapsed.value,
+  mobileOpen: mobileOpen.value,
+}, viewportWidth.value).expanded)
+const navigationToggleLabel = computed(() => {
+  if (viewportWidth.value <= 720 && mobileOpen.value) return '关闭导航'
+  return navigationExpanded.value ? '收起导航' : '展开导航'
+})
+
+function updateViewportWidth() {
+  const previousWidth = viewportWidth.value
+  const nextWidth = window.innerWidth
+
+  if (previousWidth > 1100 && nextWidth <= 1100) collapsed.value = true
+  if (previousWidth <= 720 && nextWidth > 720) mobileOpen.value = false
+  viewportWidth.value = nextWidth
+}
+
+onMounted(() => window.addEventListener('resize', updateViewportWidth))
+onBeforeUnmount(() => window.removeEventListener('resize', updateViewportWidth))
 
 watch(() => route.fullPath, () => {
   mobileOpen.value = false
 })
 
 function toggleNavigation() {
-  if (typeof window !== 'undefined' && window.matchMedia?.('(max-width: 720px)').matches) {
-    mobileOpen.value = !mobileOpen.value
-    return
-  }
+  const nextState = toggleNavigationState({
+    collapsed: collapsed.value,
+    mobileOpen: mobileOpen.value,
+  }, viewportWidth.value)
 
-  collapsed.value = !collapsed.value
+  collapsed.value = nextState.collapsed
+  mobileOpen.value = nextState.mobileOpen
 }
 
 function confirmLogout() {
@@ -86,8 +109,8 @@ function confirmLogout() {
             class="admin-header__menu"
             type="button"
             aria-controls="admin-navigation"
-            :aria-expanded="mobileOpen"
-            :aria-label="mobileOpen ? '关闭导航' : (collapsed ? '展开导航' : '收起导航')"
+            :aria-expanded="navigationExpanded"
+            :aria-label="navigationToggleLabel"
             @click="toggleNavigation"
           >
             <AppIcon name="menu" />
