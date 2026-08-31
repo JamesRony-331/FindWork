@@ -14,6 +14,15 @@ const AdminLayout = typeof window === 'undefined'
 const DashboardView = typeof window === 'undefined'
   ? ViewPlaceholder
   : () => import('../views/DashboardView.vue')
+const MenuManagementView = typeof window === 'undefined'
+  ? ViewPlaceholder
+  : () => import('../views/system/MenuManagementView.vue')
+const RoleManagementView = typeof window === 'undefined'
+  ? ViewPlaceholder
+  : () => import('../views/system/RoleManagementView.vue')
+const PermissionManagementView = typeof window === 'undefined'
+  ? ViewPlaceholder
+  : () => import('../views/system/PermissionManagementView.vue')
 
 export const routes = [
   {
@@ -34,6 +43,25 @@ export const routes = [
         path: '/dashboard',
         name: 'AdminDashboard',
         component: DashboardView,
+        meta: { title: '数据大屏' },
+      },
+      {
+        path: '/system/menu',
+        name: 'MenuManagement',
+        component: MenuManagementView,
+        meta: { section: '系统管理', title: '菜单管理' },
+      },
+      {
+        path: '/system/role',
+        name: 'RoleManagement',
+        component: RoleManagementView,
+        meta: { section: '系统管理', title: '角色管理' },
+      },
+      {
+        path: '/system/permission',
+        name: 'PermissionManagement',
+        component: PermissionManagementView,
+        meta: { section: '系统管理', title: '权限管理' },
       },
     ],
   },

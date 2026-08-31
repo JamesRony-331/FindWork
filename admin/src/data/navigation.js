@@ -5,5 +5,16 @@ export const adminNavigation = [
   { id: 'collection', label: '采集管理', icon: 'collection', badge: '待建设', disabled: true },
   { id: 'cleaning', label: '数据清洗', icon: 'clean', badge: '待建设', disabled: true },
   { id: 'dictionary', label: '字典管理', icon: 'dictionary', badge: '待建设', disabled: true },
+  {
+    id: 'system',
+    label: '系统管理',
+    icon: 'settings',
+    disabled: false,
+    children: [
+      { id: 'menu-management', label: '菜单管理', icon: 'menu-tree', to: '/system/menu' },
+      { id: 'role-management', label: '角色管理', icon: 'roles', to: '/system/role' },
+      { id: 'permission-management', label: '权限管理', icon: 'shield', to: '/system/permission' },
+    ],
+  },
   { id: 'logs', label: '系统日志', icon: 'log', badge: '待建设', disabled: true },
 ]

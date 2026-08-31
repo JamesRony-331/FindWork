@@ -14,6 +14,7 @@ const viewportWidth = ref(typeof window === 'undefined' ? 1440 : window.innerWid
 const collapsed = ref(viewportWidth.value <= 1100)
 const mobileOpen = ref(false)
 const logoutOpen = ref(false)
+const systemOpen = ref(route.path.startsWith('/system/'))
 const navigationRef = ref(null)
 const menuButtonRef = ref(null)
 const administrator = readDemoSession()?.username || '管理员'
@@ -42,8 +43,13 @@ onMounted(() => window.addEventListener('resize', updateViewportWidth))
 onBeforeUnmount(() => window.removeEventListener('resize', updateViewportWidth))
 
 watch(() => route.fullPath, () => {
+  if (route.path.startsWith('/system/')) systemOpen.value = true
   closeMobileNavigation()
 })
+
+const breadcrumbSection = computed(() => route.meta.section)
+const breadcrumbTitle = computed(() => route.meta.title || '数据大屏')
+const isDashboard = computed(() => route.name === 'AdminDashboard')
 
 watch(mobileOpen, async (isOpen) => {
   if (!isMobileNavigation.value) return
@@ -106,8 +112,9 @@ function confirmLogout() {
       <nav class="admin-sidebar__nav">
         <template v-for="item in adminNavigation" :key="item.id">
           <RouterLink
-            v-if="!item.disabled"
-            class="admin-sidebar__item admin-sidebar__item--active"
+            v-if="!item.disabled && !item.children"
+            class="admin-sidebar__item"
+            active-class="admin-sidebar__item--active"
             :to="item.to"
             :title="collapsed ? item.label : undefined"
             @click="closeMobileNavigation"
@@ -115,6 +122,33 @@ function confirmLogout() {
             <AppIcon :name="item.icon" />
             <span class="admin-sidebar__label">{{ item.label }}</span>
           </RouterLink>
+          <div v-else-if="item.children" class="admin-sidebar__group">
+            <button
+              class="admin-sidebar__item admin-sidebar__group-toggle"
+              :class="{ 'admin-sidebar__item--parent-active': route.path.startsWith('/system/') }"
+              type="button"
+              :title="collapsed ? item.label : undefined"
+              :aria-expanded="systemOpen"
+              @click="systemOpen = !systemOpen"
+            >
+              <AppIcon :name="item.icon" />
+              <span class="admin-sidebar__label">{{ item.label }}</span>
+              <AppIcon class="admin-sidebar__chevron" name="chevron" />
+            </button>
+            <div v-show="systemOpen" class="admin-sidebar__children">
+              <RouterLink
+                v-for="child in item.children"
+                :key="child.id"
+                class="admin-sidebar__child"
+                active-class="admin-sidebar__child--active"
+                :to="child.to"
+                @click="closeMobileNavigation"
+              >
+                <AppIcon :name="child.icon" />
+                <span>{{ child.label }}</span>
+              </RouterLink>
+            </div>
+          </div>
           <div
             v-else
             class="admin-sidebar__item admin-sidebar__item--disabled"
@@ -156,12 +190,16 @@ function confirmLogout() {
             <AppIcon name="menu" />
           </button>
           <nav class="admin-breadcrumbs" aria-label="面包屑">
-            <span>首页</span><span aria-hidden="true">/</span><strong>数据大屏</strong>
+            <span>首页</span><span aria-hidden="true">/</span>
+            <template v-if="breadcrumbSection">
+              <span>{{ breadcrumbSection }}</span><span aria-hidden="true">/</span>
+            </template>
+            <strong>{{ breadcrumbTitle }}</strong>
           </nav>
         </div>
 
         <div class="admin-header__meta">
-          <span class="admin-header__updated">
+          <span v-if="isDashboard" class="admin-header__updated">
             <AppIcon name="clock" />
             数据更新：<time :datetime="dashboardMeta.updatedAt">{{ dashboardMeta.updateLabel }}</time>
           </span>
@@ -250,6 +288,53 @@ function confirmLogout() {
 .admin-sidebar__item--active {
   background: var(--color-primary);
   font-weight: 600;
+}
+
+.admin-sidebar__item--parent-active {
+  background: var(--color-primary);
+  font-weight: 600;
+}
+
+.admin-sidebar__group-toggle {
+  width: 100%;
+  background: transparent;
+  text-align: left;
+}
+
+.admin-sidebar__chevron {
+  width: 16px;
+  height: 16px;
+  transition: transform 160ms ease;
+}
+
+.admin-sidebar__group-toggle[aria-expanded="true"] .admin-sidebar__chevron {
+  transform: rotate(180deg);
+}
+
+.admin-sidebar__children {
+  display: grid;
+  padding: var(--space-1) var(--space-3) var(--space-2) 44px;
+}
+
+.admin-sidebar__child {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-control);
+  color: var(--color-surface);
+}
+
+.admin-sidebar__child .app-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.admin-sidebar__child:hover,
+.admin-sidebar__child--active {
+  background: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .admin-sidebar__item--disabled {
@@ -380,6 +465,19 @@ function confirmLogout() {
 .admin-shell--collapsed .admin-sidebar__label,
 .admin-shell--collapsed .admin-sidebar__badge {
   display: none;
+}
+
+.admin-shell--collapsed .admin-sidebar__children,
+.admin-shell--collapsed .admin-sidebar__chevron {
+  display: none;
+}
+
+.admin-shell--mobile-open .admin-sidebar__children {
+  display: grid;
+}
+
+.admin-shell--mobile-open .admin-sidebar__chevron {
+  display: block;
 }
 
 .admin-shell__scrim {

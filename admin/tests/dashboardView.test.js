@@ -31,6 +31,13 @@ test('admin layout exposes responsive navigation and logout confirmation', () =>
   assert.doesNotMatch(layout, /window\.(?:alert|confirm)/)
 })
 
+test('mobile drawer reveals nested system navigation even when desktop navigation is collapsed', () => {
+  const layout = source('layouts/AdminLayout.vue')
+
+  assert.match(layout, /admin-shell--mobile-open[\s\S]*?admin-sidebar__children[\s\S]*?display:\s*grid/)
+  assert.match(layout, /admin-shell--mobile-open[\s\S]*?admin-sidebar__chevron[\s\S]*?display:\s*block/)
+})
+
 test('responsive stylesheet covers desktop collapse, mobile drawer, and narrow metrics', () => {
   const css = source('styles/responsive.css')
 

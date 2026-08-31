@@ -3,10 +3,16 @@ import assert from 'node:assert/strict'
 import router, { routes } from '../src/router/index.js'
 import { clearDemoSession, createDemoSession } from '../src/utils/demoSession.js'
 
-test('admin routes expose login and dashboard only', () => {
+test('admin routes expose login, dashboard, and system management pages', () => {
   assert.ok(routes.some((route) => route.path === '/login'))
   const protectedLayout = routes.find((route) => route.meta?.requiresAuth)
   assert.ok(protectedLayout?.children?.some((route) => route.path === '/dashboard'))
+  assert.deepEqual(protectedLayout?.children?.map((route) => route.name), [
+    'AdminDashboard',
+    'MenuManagement',
+    'RoleManagement',
+    'PermissionManagement',
+  ])
   assert.equal(routes.filter((route) => route.meta?.requiresAuth).length, 1)
 })
 

@@ -39,7 +39,12 @@ function compileAdminLayout() {
     .replace(/^import \{ navigationPresentation, toggleNavigationState \} from ['"]\.\.\/utils\/navigationState\.js['"]\s*$/gm, 'const { navigationPresentation, toggleNavigationState } = Dependencies')
 
   const executable = `${replaceImports(script.content)}\n${replaceImports(template.code).replace('export function render', 'function render')}\n__sfc__.render = render\nreturn __sfc__`
-  const route = Vue.reactive({ fullPath: '/dashboard' })
+  const route = Vue.reactive({
+    fullPath: '/dashboard',
+    path: '/dashboard',
+    name: 'AdminDashboard',
+    meta: { title: '数据大屏' },
+  })
   const RouterLink = {
     props: ['to'],
     setup: (props, { slots }) => () => Vue.h('a', { href: props.to }, slots.default?.()),
@@ -81,6 +86,7 @@ function createNode(type, document, text = '') {
     parent: null,
     children: [],
     props: {},
+    style: {},
     focus() { document.activeElement = node },
     querySelector() {
       return descendants(node).find((child) => ['a', 'button'].includes(child.type) && !child.props.disabled)
