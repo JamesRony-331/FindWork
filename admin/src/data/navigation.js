@@ -1,6 +1,7 @@
 export const adminNavigation = [
   { id: 'dashboard', label: '数据大屏', icon: 'dashboard', to: '/dashboard', disabled: false },
-  { id: 'users', label: '用户管理', icon: 'user', badge: '待建设', disabled: true },
+  { id: 'profile', label: '个人主页', icon: 'user', to: '/profile', disabled: false },
+  { id: 'users', label: '用户管理', icon: 'user', to: '/users', disabled: false },
   { id: 'jobs', label: '岗位数据', icon: 'briefcase', badge: '待建设', disabled: true },
   { id: 'collection', label: '采集管理', icon: 'collection', badge: '待建设', disabled: true },
   { id: 'cleaning', label: '数据清洗', icon: 'clean', badge: '待建设', disabled: true },

@@ -1,28 +1,70 @@
 <script setup>
+import { onMounted, ref } from 'vue'
 import ManagementTable from '../../components/ManagementTable.vue'
+import { getRequestErrorMessage, getUserPermissions, insertPermission, updatePermission } from '../../api/admin.js'
+import { toPermissionPayload, toPermissionRows } from '../../utils/permissionManagement.js'
 
 const columns = [
   { key: 'name', label: '权限名称' }, { key: 'code', label: '权限编码' },
-  { key: 'roles', label: '关联角色' }, { key: 'scope', label: '作用范围' },
-  { key: 'status', label: '状态' }, { key: 'createdAt', label: '创建时间' },
 ]
 const fields = [
   { key: 'name', label: '权限名称', placeholder: '请输入权限名称', required: true },
   { key: 'code', label: '权限编码', placeholder: '例如 system:menu:list', required: true },
-  { key: 'roles', label: '关联角色', placeholder: '请输入角色名称' },
-  { key: 'scope', label: '作用范围', placeholder: '请输入权限作用范围' },
-  { key: 'createdAt', label: '创建时间', placeholder: 'YYYY-MM-DD', defaultValue: '2026-08-31' },
-  { key: 'status', label: '状态', type: 'select', defaultValue: 'enabled', options: [{ label: '启用', value: 'enabled' }, { label: '停用', value: 'disabled' }] },
 ]
-const rows = [
-  { id: 1, name: '超级管理员权限', code: '*:*:*', roles: '超级管理员', scope: '全部资源', status: 'enabled', createdAt: '2026-08-31' },
-  { id: 2, name: '菜单查询', code: 'system:menu:list', roles: '超级管理员', scope: '菜单管理', status: 'enabled', createdAt: '2026-08-31' },
-  { id: 3, name: '角色查询', code: 'system:role:list', roles: '超级管理员', scope: '角色管理', status: 'enabled', createdAt: '2026-08-31' },
-  { id: 4, name: '权限查询', code: 'system:permission:list', roles: '超级管理员', scope: '权限管理', status: 'enabled', createdAt: '2026-08-31' },
-]
+
+const rows = ref([])
+const isLoading = ref(true)
+const loadError = ref('')
+
+onMounted(loadPermissions)
+
+async function loadPermissions() {
+  isLoading.value = true
+  loadError.value = ''
+  try {
+    const response = await getUserPermissions()
+    if (response.code !== 200) throw new Error(response.info || '权限加载失败')
+    rows.value = toPermissionRows(response.data)
+  } catch (error) {
+    rows.value = []
+    loadError.value = getRequestErrorMessage(error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function savePermission(record) {
+  const payload = toPermissionPayload(record)
+  const response = record.id == null
+    ? await insertPermission(payload)
+    : await updatePermission(payload)
+  if (response.code !== 200) throw new Error(response.info || '权限保存失败')
+  await loadPermissions()
+}
 </script>
 
 <template>
-  <ManagementTable title="权限管理" description="维护权限编码及角色关联关系，超级管理员拥有全局通配权限。" add-label="新增权限" search-placeholder="搜索权限名称、权限编码或关联角色" :columns="columns" :fields="fields" :rows="rows" />
-  <!-- 静态阶段保留新增、编辑、删除操作，后续接入权限接口。 -->
+  <div v-if="isLoading" class="permission-state" aria-live="polite">正在加载权限…</div>
+  <div v-else-if="loadError" class="permission-state permission-state--error" role="alert">
+    <span>{{ loadError }}</span>
+    <button class="button button--secondary" type="button" @click="loadPermissions">重新加载</button>
+  </div>
+  <ManagementTable
+    v-else
+    title="权限管理"
+    description="维护管理端权限名称与权限编码。"
+    add-label="新增权限"
+    search-placeholder="搜索权限名称或权限编码"
+    :columns="columns"
+    :fields="fields"
+    :rows="rows"
+    :deletable="false"
+    :show-status-filter="false"
+    :save-handler="savePermission"
+  />
 </template>
+
+<style scoped>
+.permission-state { display: flex; min-height: 180px; align-items: center; justify-content: center; gap: var(--space-3); color: var(--color-muted); }
+.permission-state--error { color: var(--color-danger); }
+</style>

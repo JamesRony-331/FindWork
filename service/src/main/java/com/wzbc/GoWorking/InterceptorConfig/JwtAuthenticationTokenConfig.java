@@ -1,7 +1,6 @@
 package com.wzbc.GoWorking.InterceptorConfig;
 
 import com.wzbc.GoWorking.Interceptor.JwtAuthenticationToken;
-import com.wzbc.GoWorking.entity.Constant.constant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -22,7 +21,8 @@ public class JwtAuthenticationTokenConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/user/login",
-                        "/user/reg"
+                        "/user/reg",
+                        "/user/AdminLogin"
                 );
     }
 }

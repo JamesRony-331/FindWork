@@ -5,6 +5,7 @@ import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 import * as Vue from 'vue'
 import { dashboardMeta } from '../src/data/dashboard.js'
 import { adminNavigation } from '../src/data/navigation.js'
+import { buildAdminNavigation } from '../src/utils/menuNavigation.js'
 import { navigationPresentation, toggleNavigationState } from '../src/utils/navigationState.js'
 
 function destructureImport(specifiers) {
@@ -34,8 +35,9 @@ function compileAdminLayout() {
     .replace(/^import AppIcon from ['"]\.\.\/components\/AppIcon\.vue['"]\s*$/gm, 'const AppIcon = Components.AppIcon')
     .replace(/^import ConfirmDialog from ['"]\.\.\/components\/ConfirmDialog\.vue['"]\s*$/gm, 'const ConfirmDialog = Components.ConfirmDialog')
     .replace(/^import \{ dashboardMeta \} from ['"]\.\.\/data\/dashboard\.js['"]\s*$/gm, 'const { dashboardMeta } = Dependencies')
-    .replace(/^import \{ adminNavigation \} from ['"]\.\.\/data\/navigation\.js['"]\s*$/gm, 'const { adminNavigation } = Dependencies')
-    .replace(/^import \{ clearDemoSession, readDemoSession \} from ['"]\.\.\/utils\/demoSession\.js['"]\s*$/gm, 'const { clearDemoSession, readDemoSession } = Dependencies')
+    .replace(/^import \{ getRequestErrorMessage, getUserMenus \} from ['"]\.\.\/api\/admin\.js['"]\s*$/gm, 'const { getRequestErrorMessage, getUserMenus } = Dependencies')
+    .replace(/^import \{ clearAuthSession, readAuthSession \} from ['"]\.\.\/utils\/authSession\.js['"]\s*$/gm, 'const { clearAuthSession, readAuthSession } = Dependencies')
+    .replace(/^import \{ buildAdminNavigation \} from ['"]\.\.\/utils\/menuNavigation\.js['"]\s*$/gm, 'const { buildAdminNavigation } = Dependencies')
     .replace(/^import \{ navigationPresentation, toggleNavigationState \} from ['"]\.\.\/utils\/navigationState\.js['"]\s*$/gm, 'const { navigationPresentation, toggleNavigationState } = Dependencies')
 
   const executable = `${replaceImports(script.content)}\n${replaceImports(template.code).replace('export function render', 'function render')}\n__sfc__.render = render\nreturn __sfc__`
@@ -62,9 +64,11 @@ function compileAdminLayout() {
   }
   const Dependencies = {
     dashboardMeta,
-    adminNavigation,
-    clearDemoSession() {},
-    readDemoSession: () => ({ username: '管理员' }),
+    getRequestErrorMessage: (error) => error.message,
+    getUserMenus: async () => ({ code: 200, data: adminNavigation.map((item, index) => ({ menuId: index + 1, parentId: 0, menuName: item.label, path: item.to || `/item-${index}`, icon: item.icon, sortOrder: index })) }),
+    buildAdminNavigation,
+    clearAuthSession() {},
+    readAuthSession: () => ({ user: { nickname: '管理员', email: 'admin' }, token: 'test-token' }),
     navigationPresentation,
     toggleNavigationState,
   }
@@ -130,6 +134,8 @@ test('mobile drawer moves focus, isolates workspace, closes on Escape, and resto
 
   try {
     const mounted = mount(compileAdminLayout(), document)
+    await Promise.resolve()
+    await Vue.nextTick()
     const menu = findNode(mounted.root, (node) => node.type === 'button' && node.props['aria-controls'] === 'admin-navigation')
     const sidebar = findNode(mounted.root, (node) => node.type === 'aside')
     const workspace = findNode(mounted.root, (node) => node.props.class === 'admin-shell__workspace')
@@ -162,4 +168,25 @@ test('mobile drawer moves focus, isolates workspace, closes on Escape, and resto
     globalThis.window = previousWindow
     globalThis.document = previousDocument
   }
+})
+
+test('admin layout loads navigation from the backend and exposes retry feedback', () => {
+  const source = readFileSync(new URL('../src/layouts/AdminLayout.vue', import.meta.url), 'utf8')
+
+  assert.match(source, /getUserMenus/)
+  assert.match(source, /buildAdminNavigation/)
+  assert.match(source, /重新加载菜单/)
+  assert.doesNotMatch(source, /v-for="item in adminNavigation"/)
+})
+
+test('system submenu uses a persistent animated collapse container', () => {
+  const source = readFileSync(new URL('../src/layouts/AdminLayout.vue', import.meta.url), 'utf8')
+
+  assert.doesNotMatch(source, /v-show="isGroupOpen\(item\.id\)"/)
+  assert.match(source, /admin-sidebar__children-collapse/)
+  assert.match(source, /admin-sidebar__children-collapse--open/)
+  assert.match(source, /admin-sidebar__children-list/)
+  assert.match(source, /grid-template-rows:\s*0fr/)
+  assert.match(source, /grid-template-rows:\s*1fr/)
+  assert.match(source, /transition:\s*grid-template-rows\s+220ms\s+ease/)
 })

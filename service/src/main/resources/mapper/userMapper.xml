@@ -40,7 +40,7 @@
         WHERE uuid = #{userPO.uuid}
     </update>
 
-    <select id="selectUserByEmail" resultType="com.wzbc.GoWorking.entity.PO.UserPO">
+    <select id="selectUserByEmail" resultType="com.wzbc.GoWorking.entity.PO.User.UserPO">
         SELECT uuid,
                nickname,
                email,
@@ -51,6 +51,23 @@
                IsDelete AS isDelete
         FROM sys_user
         WHERE email = #{email}
+    </select>
+
+    <select id="selectUserTotalCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM sys_user
+    </select>
+
+    <select id="selectUsersByPage" resultType="com.wzbc.GoWorking.entity.PO.User.UserPO">
+        SELECT uuid,
+               nickname,
+               email,
+               sex,
+               CreatTime AS createTime,
+               IsDelete AS isDelete
+        FROM sys_user
+        ORDER BY CreatTime DESC
+        LIMIT #{pageQuery.start}, #{pageQuery.pageSize}
     </select>
 
 </mapper>

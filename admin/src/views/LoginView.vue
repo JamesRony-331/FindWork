@@ -1,16 +1,20 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { createDemoSession } from '../utils/demoSession.js'
+import { adminLogin, getRequestErrorMessage } from '../api/admin.js'
+import { createAuthSession } from '../utils/authSession.js'
 
 const router = useRouter()
 const username = ref('')
 const password = ref('')
 const remember = ref(false)
 const isPasswordVisible = ref(false)
+const isSubmitting = ref(false)
+const loginError = ref('')
 const errors = reactive({ username: '', password: '' })
 
-function submitLogin() {
+async function submitLogin() {
+  loginError.value = ''
   errors.username = username.value.trim() ? '' : '请输入管理员账号'
   errors.password = password.value ? '' : '请输入密码'
 
@@ -18,8 +22,17 @@ function submitLogin() {
     return
   }
 
-  createDemoSession(username.value.trim(), remember.value)
-  router.replace('/dashboard')
+  isSubmitting.value = true
+  try {
+    const response = await adminLogin({ email: username.value.trim(), password: password.value })
+    if (response.code !== 200 || !response.data?.token) throw new Error(response.info || '登录失败')
+    createAuthSession(response.data, remember.value)
+    router.replace('/dashboard')
+  } catch (error) {
+    loginError.value = getRequestErrorMessage(error)
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -128,8 +141,11 @@ function submitLogin() {
             <span>记住登录状态</span>
           </label>
 
-          <button class="button login-form__submit" type="submit">登录管理端</button>
-          <p class="login-form__hint">演示环境：任意非空账号和密码均可登录</p>
+          <button class="button login-form__submit" type="submit" :disabled="isSubmitting">
+            {{ isSubmitting ? '正在登录…' : '登录管理端' }}
+          </button>
+          <p v-if="loginError" class="field__error login-form__error" aria-live="polite">{{ loginError }}</p>
+          <p class="login-form__hint">请使用已授权的管理员账号登录</p>
         </form>
       </div>
     </section>
@@ -467,6 +483,10 @@ function submitLogin() {
   margin-top: var(--space-1);
   color: var(--color-muted);
   font-size: var(--font-size-caption);
+}
+
+.login-form__error {
+  text-align: left;
 }
 
 @media (max-width: 820px) {

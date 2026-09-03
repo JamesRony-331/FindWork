@@ -26,9 +26,6 @@ public class ABaseController {
     protected String getUserId(){
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String token = request.getHeader("Authorization");
-        if (token != null && token.length() > 1) {
-            token = token.substring(1, token.length() - 1);  // 去掉json转换产生的引号
-        }
         String UserId= TokenUserDTO.parseToken(token);
         return UserId;
     }

@@ -1,5 +1,8 @@
 <script setup>
 import { publicNavItems } from '../data/navigation';
+import { isClientAuthenticated } from '../utils/authNavigation.js';
+
+const authenticated = isClientAuthenticated();
 </script>
 <template>
   <div class="public-layout">
@@ -13,7 +16,8 @@ import { publicNavItems } from '../data/navigation';
           {{ item.label }}
         </router-link>
       </nav>
-      <router-link class="button public-login" to="/login">登录</router-link>
+      <router-link v-if="authenticated" class="button public-login" to="/profile">个人中心</router-link>
+      <router-link v-else class="button public-login" to="/login">登录</router-link>
     </header>
     <main><slot /></main>
   </div>

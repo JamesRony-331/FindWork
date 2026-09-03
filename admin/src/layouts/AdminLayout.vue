@@ -3,9 +3,10 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
+import { getRequestErrorMessage, getUserMenus } from '../api/admin.js'
 import { dashboardMeta } from '../data/dashboard.js'
-import { adminNavigation } from '../data/navigation.js'
-import { clearDemoSession, readDemoSession } from '../utils/demoSession.js'
+import { clearAuthSession, readAuthSession } from '../utils/authSession.js'
+import { buildAdminNavigation } from '../utils/menuNavigation.js'
 import { navigationPresentation, toggleNavigationState } from '../utils/navigationState.js'
 
 const route = useRoute()
@@ -14,10 +15,14 @@ const viewportWidth = ref(typeof window === 'undefined' ? 1440 : window.innerWid
 const collapsed = ref(viewportWidth.value <= 1100)
 const mobileOpen = ref(false)
 const logoutOpen = ref(false)
-const systemOpen = ref(route.path.startsWith('/system/'))
+const openGroups = ref(new Set())
+const navigationItems = ref([])
+const menuLoading = ref(true)
+const menuError = ref('')
 const navigationRef = ref(null)
 const menuButtonRef = ref(null)
-const administrator = readDemoSession()?.username || '管理员'
+const administratorSession = readAuthSession()
+const administrator = administratorSession?.user?.nickname || administratorSession?.user?.email || '管理员'
 const isMobileNavigation = computed(() => viewportWidth.value <= 720)
 const navigationHidden = computed(() => isMobileNavigation.value && !mobileOpen.value)
 const workspaceHidden = computed(() => isMobileNavigation.value && mobileOpen.value)
@@ -39,13 +44,48 @@ function updateViewportWidth() {
   viewportWidth.value = nextWidth
 }
 
-onMounted(() => window.addEventListener('resize', updateViewportWidth))
+onMounted(() => {
+  window.addEventListener('resize', updateViewportWidth)
+  loadNavigation()
+})
 onBeforeUnmount(() => window.removeEventListener('resize', updateViewportWidth))
 
 watch(() => route.fullPath, () => {
-  if (route.path.startsWith('/system/')) systemOpen.value = true
+  expandActiveGroup()
   closeMobileNavigation()
 })
+
+async function loadNavigation() {
+  menuLoading.value = true
+  menuError.value = ''
+  try {
+    const response = await getUserMenus()
+    if (response.code !== 200) throw new Error(response.info || '菜单加载失败')
+    navigationItems.value = buildAdminNavigation(response.data)
+    expandActiveGroup()
+  } catch (error) {
+    navigationItems.value = []
+    menuError.value = getRequestErrorMessage(error)
+  } finally {
+    menuLoading.value = false
+  }
+}
+
+function expandActiveGroup() {
+  const active = navigationItems.value.find((item) => item.children.some((child) => route.path === child.to))
+  if (active) openGroups.value = new Set([...openGroups.value, active.id])
+}
+
+function isGroupOpen(id) {
+  return openGroups.value.has(id)
+}
+
+function toggleGroup(id) {
+  const next = new Set(openGroups.value)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
+  openGroups.value = next
+}
 
 const breadcrumbSection = computed(() => route.meta.section)
 const breadcrumbTitle = computed(() => route.meta.title || '数据大屏')
@@ -84,7 +124,7 @@ function handleShellKeydown(event) {
 }
 
 function confirmLogout() {
-  clearDemoSession()
+  clearAuthSession()
   logoutOpen.value = false
   router.replace('/login')
 }
@@ -110,9 +150,15 @@ function confirmLogout() {
       </div>
 
       <nav class="admin-sidebar__nav">
-        <template v-for="item in adminNavigation" :key="item.id">
+        <p v-if="menuLoading" class="admin-sidebar__state" aria-live="polite">正在加载菜单…</p>
+        <div v-else-if="menuError" class="admin-sidebar__state" role="alert">
+          <span>{{ menuError }}</span>
+          <button type="button" @click="loadNavigation">重新加载菜单</button>
+        </div>
+        <p v-else-if="!navigationItems.length" class="admin-sidebar__state">当前账号暂无可用菜单</p>
+        <template v-for="item in navigationItems" :key="item.id">
           <RouterLink
-            v-if="!item.disabled && !item.children"
+            v-if="!item.children.length"
             class="admin-sidebar__item"
             active-class="admin-sidebar__item--active"
             :to="item.to"
@@ -122,42 +168,41 @@ function confirmLogout() {
             <AppIcon :name="item.icon" />
             <span class="admin-sidebar__label">{{ item.label }}</span>
           </RouterLink>
-          <div v-else-if="item.children" class="admin-sidebar__group">
+          <div v-else class="admin-sidebar__group">
             <button
               class="admin-sidebar__item admin-sidebar__group-toggle"
-              :class="{ 'admin-sidebar__item--parent-active': route.path.startsWith('/system/') }"
+              :class="{ 'admin-sidebar__item--parent-active': item.children.some((child) => route.path === child.to) }"
               type="button"
               :title="collapsed ? item.label : undefined"
-              :aria-expanded="systemOpen"
-              @click="systemOpen = !systemOpen"
+              :aria-expanded="isGroupOpen(item.id)"
+              @click="toggleGroup(item.id)"
             >
               <AppIcon :name="item.icon" />
               <span class="admin-sidebar__label">{{ item.label }}</span>
               <AppIcon class="admin-sidebar__chevron" name="chevron" />
             </button>
-            <div v-show="systemOpen" class="admin-sidebar__children">
-              <RouterLink
-                v-for="child in item.children"
-                :key="child.id"
-                class="admin-sidebar__child"
-                active-class="admin-sidebar__child--active"
-                :to="child.to"
-                @click="closeMobileNavigation"
-              >
-                <AppIcon :name="child.icon" />
-                <span>{{ child.label }}</span>
-              </RouterLink>
+            <div
+              class="admin-sidebar__children-collapse"
+              :class="{ 'admin-sidebar__children-collapse--open': isGroupOpen(item.id) }"
+              :inert="isGroupOpen(item.id) ? undefined : ''"
+              :aria-hidden="isGroupOpen(item.id) ? undefined : 'true'"
+            >
+              <div class="admin-sidebar__children">
+                <div class="admin-sidebar__children-list">
+                  <RouterLink
+                    v-for="child in item.children"
+                    :key="child.id"
+                    class="admin-sidebar__child"
+                    active-class="admin-sidebar__child--active"
+                    :to="child.to"
+                    @click="closeMobileNavigation"
+                  >
+                    <AppIcon :name="child.icon" />
+                    <span>{{ child.label }}</span>
+                  </RouterLink>
+                </div>
+              </div>
             </div>
-          </div>
-          <div
-            v-else
-            class="admin-sidebar__item admin-sidebar__item--disabled"
-            :title="collapsed ? `${item.label}（${item.badge}）` : undefined"
-            aria-disabled="true"
-          >
-            <AppIcon :name="item.icon" />
-            <span class="admin-sidebar__label">{{ item.label }}</span>
-            <span class="admin-sidebar__badge">{{ item.badge }}</span>
           </div>
         </template>
       </nav>
@@ -203,7 +248,7 @@ function confirmLogout() {
             <AppIcon name="clock" />
             数据更新：<time :datetime="dashboardMeta.updatedAt">{{ dashboardMeta.updateLabel }}</time>
           </span>
-          <span class="admin-header__user" :title="administrator">{{ administrator }}</span>
+          <RouterLink class="admin-header__user" to="/profile" :title="`${administrator}的个人主页`">{{ administrator }}</RouterLink>
           <button class="admin-header__logout" type="button" @click="logoutOpen = true">
             <AppIcon name="logout" />
             <span>退出</span>
@@ -273,6 +318,22 @@ function confirmLogout() {
   padding: var(--space-4) 0;
 }
 
+.admin-sidebar__state {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  color: var(--color-surface);
+  font-size: var(--font-size-caption);
+}
+
+.admin-sidebar__state button {
+  justify-self: start;
+  background: transparent;
+  color: var(--color-surface);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .admin-sidebar__item {
   display: grid;
   min-height: 56px;
@@ -311,7 +372,26 @@ function confirmLogout() {
   transform: rotate(180deg);
 }
 
+.admin-sidebar__children-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: grid-template-rows 220ms ease, opacity 180ms ease, transform 220ms ease;
+}
+
+.admin-sidebar__children-collapse--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .admin-sidebar__children {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-sidebar__children-list {
   display: grid;
   padding: var(--space-1) var(--space-3) var(--space-2) 44px;
 }
@@ -467,12 +547,12 @@ function confirmLogout() {
   display: none;
 }
 
-.admin-shell--collapsed .admin-sidebar__children,
+.admin-shell--collapsed .admin-sidebar__children-collapse,
 .admin-shell--collapsed .admin-sidebar__chevron {
   display: none;
 }
 
-.admin-shell--mobile-open .admin-sidebar__children {
+.admin-shell--mobile-open .admin-sidebar__children-collapse {
   display: grid;
 }
 
@@ -490,7 +570,9 @@ function confirmLogout() {
 
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,
-  .admin-shell__workspace {
+  .admin-shell__workspace,
+  .admin-sidebar__children-collapse,
+  .admin-sidebar__chevron {
     transition: none;
   }
 }

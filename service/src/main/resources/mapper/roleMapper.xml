@@ -18,8 +18,22 @@
         SELECT id, role_name AS roleName, role_code AS roleCode
         FROM sys_role WHERE id = #{id}
     </select>
+    <select id="selectByCode" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePO">
+        SELECT id, role_name AS roleName, role_code AS roleCode
+        FROM sys_role WHERE role_code = #{roleCode}
+        LIMIT 1
+    </select>
     <select id="selectAll" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePO">
         SELECT id, role_name AS roleName, role_code AS roleCode
         FROM sys_role ORDER BY id
+    </select>
+    <select id="selectByUserId" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePO">
+        SELECT DISTINCT r.id,
+                        r.role_name AS roleName,
+                        r.role_code AS roleCode
+        FROM sys_role r
+        JOIN sys_user_role ur ON ur.role_id = r.id
+        WHERE ur.user_id = #{userId}
+        ORDER BY r.id
     </select>
 </mapper>

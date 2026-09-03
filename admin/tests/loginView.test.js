@@ -10,7 +10,11 @@ test('login view exposes the approved form controls and inline feedback', () => 
   }
 
   assert.match(view, /aria-live="polite"/)
-  assert.match(view, /createDemoSession/)
+  assert.match(view, /adminLogin/)
+  assert.match(view, /createAuthSession/)
+  assert.match(view, /isSubmitting/)
+  assert.match(view, /loginError/)
   assert.match(view, /router\.replace\('\/dashboard'\)/)
   assert.match(view, /const remember = ref\(false\)/)
+  assert.doesNotMatch(view, /任意非空账号和密码均可登录/)
 })

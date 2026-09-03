@@ -126,5 +126,5 @@ test('normal-size semantic and weak labels use an approved 4.5:1 text color', ()
 
 test('admin shell provides an installable web-history router', () => {
   assert.equal(typeof router.install, 'function')
-  assert.equal(router.getRoutes().length, 7)
+  assert.equal(router.getRoutes().length, 4)
 })

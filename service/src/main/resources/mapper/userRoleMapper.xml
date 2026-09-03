@@ -18,6 +18,18 @@
         SELECT id, user_id AS userId, role_id AS roleId
         FROM sys_user_role WHERE id = #{id}
     </select>
+    <select id="selectByUserAndRole" resultType="com.wzbc.GoWorking.entity.PO.RBAC.UserRolePO">
+        SELECT id, user_id AS userId, role_id AS roleId
+        FROM sys_user_role
+        WHERE user_id = #{userId} AND role_id = #{roleId}
+        LIMIT 1
+    </select>
+    <select id="selectByUserId" resultType="com.wzbc.GoWorking.entity.PO.RBAC.UserRolePO">
+        SELECT id, user_id AS userId, role_id AS roleId
+        FROM sys_user_role
+        WHERE user_id = #{userId}
+        ORDER BY id
+    </select>
     <select id="selectAll" resultType="com.wzbc.GoWorking.entity.PO.RBAC.UserRolePO">
         SELECT id, user_id AS userId, role_id AS roleId
         FROM sys_user_role ORDER BY id

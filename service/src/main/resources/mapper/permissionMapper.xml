@@ -18,6 +18,11 @@
         SELECT id, permission_name AS permissionName, permission_code AS permissionCode
         FROM sys_permission WHERE id = #{id}
     </select>
+    <select id="selectByCode" resultType="com.wzbc.GoWorking.entity.PO.RBAC.PermissionPO">
+        SELECT id, permission_name AS permissionName, permission_code AS permissionCode
+        FROM sys_permission WHERE permission_code = #{permissionCode}
+        LIMIT 1
+    </select>
     <select id="selectAll" resultType="com.wzbc.GoWorking.entity.PO.RBAC.PermissionPO">
         SELECT id, permission_name AS permissionName, permission_code AS permissionCode
         FROM sys_permission ORDER BY id

@@ -4,8 +4,22 @@ import { adminNavigation } from '../src/data/navigation.js'
 
 test('admin navigation follows the approved order', () => {
   assert.deepEqual(adminNavigation.map((item) => item.label), [
-    '数据大屏', '用户管理', '岗位数据', '采集管理', '数据清洗', '字典管理', '系统管理', '系统日志',
+    '数据大屏', '个人主页', '用户管理', '岗位数据', '采集管理', '数据清洗', '字典管理', '系统管理', '系统日志',
   ])
+})
+
+test('profile navigation is enabled', () => {
+  const profile = adminNavigation.find((item) => item.id === 'profile')
+
+  assert.equal(profile.to, '/profile')
+  assert.equal(profile.disabled, false)
+})
+
+test('user management navigation is enabled', () => {
+  const users = adminNavigation.find((item) => item.id === 'users')
+
+  assert.equal(users.to, '/users')
+  assert.equal(users.disabled, false)
 })
 
 test('system management exposes menu, role, and permission child routes', () => {

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { publicNavItems, topbarNavItems, userNavGroups } from '../src/data/navigation.js';
+import { readFileSync } from 'node:fs';
 
 test('用户导航不包含管理端路由', () => {
   const paths = userNavGroups.flatMap((group) => group.items.map((item) => item.path));
@@ -23,4 +24,12 @@ test('顶部导航包含首页和系统展示入口', () => {
 
 test('公共导航与用户顶部导航顺序一致', () => {
   assert.deepEqual(publicNavItems, topbarNavItems);
+});
+
+test('公共页面根据登录态显示登录或个人中心入口', () => {
+  const layout = readFileSync(new URL('../src/layouts/PublicLayout.vue', import.meta.url), 'utf8');
+
+  assert.match(layout, /isClientAuthenticated/);
+  assert.match(layout, /v-if="authenticated"[\s\S]*to="\/profile"[\s\S]*个人中心/);
+  assert.match(layout, /v-else[\s\S]*to="\/login"[\s\S]*登录/);
 });

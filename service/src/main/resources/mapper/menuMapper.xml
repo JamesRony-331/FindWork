@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wzbc.GoWorking.Mapper.MenuMapper">
+    <resultMap id="menuResultMap" type="com.wzbc.GoWorking.entity.PO.Menu.MenuPO">
+        <id column="menu_id" property="menuId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="menu_name" property="menuName"/>
+        <result column="menu_type" property="menuType"/>
+        <result column="path" property="path"/>
+        <result column="component" property="component"/>
+        <result column="route_name" property="routeName"/>
+        <result column="permission" property="permission"/>
+        <result column="icon" property="icon"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="visible" property="visible"/>
+        <result column="status" property="status"/>
+        <result column="keep_alive" property="keepAlive"/>
+        <result column="external_link" property="externalLink"/>
+        <result column="redirect" property="redirect"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <sql id="menuColumns">
+        menu_id,
+        parent_id,
+        menu_name,
+        menu_type,
+        path,
+        component,
+        route_name,
+        permission,
+        icon,
+        sort_order,
+        visible,
+        status,
+        keep_alive,
+        external_link,
+        redirect,
+        create_time,
+        update_time,
+        remark
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="menuPO.menuId" keyColumn="menu_id">
+        INSERT INTO sys_menu (
+            parent_id, menu_name, menu_type, path, component, route_name,
+            permission, icon, sort_order, visible, status, keep_alive,
+            external_link, redirect, remark
+        ) VALUES (
+            #{menuPO.parentId}, #{menuPO.menuName}, #{menuPO.menuType}, #{menuPO.path},
+            #{menuPO.component}, #{menuPO.routeName}, #{menuPO.permission}, #{menuPO.icon},
+            #{menuPO.sortOrder}, #{menuPO.visible}, #{menuPO.status}, #{menuPO.keepAlive},
+            #{menuPO.externalLink}, #{menuPO.redirect}, #{menuPO.remark}
+        )
+    </insert>
+
+    <update id="updateById">
+        UPDATE sys_menu
+        SET parent_id = #{menuPO.parentId},
+            menu_name = #{menuPO.menuName},
+            menu_type = #{menuPO.menuType},
+            path = #{menuPO.path},
+            component = #{menuPO.component},
+            route_name = #{menuPO.routeName},
+            permission = #{menuPO.permission},
+            icon = #{menuPO.icon},
+            sort_order = #{menuPO.sortOrder},
+            visible = #{menuPO.visible},
+            status = #{menuPO.status},
+            keep_alive = #{menuPO.keepAlive},
+            external_link = #{menuPO.externalLink},
+            redirect = #{menuPO.redirect},
+            remark = #{menuPO.remark}
+        WHERE menu_id = #{menuPO.menuId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM sys_menu WHERE menu_id = #{menuId}
+    </delete>
+
+    <select id="selectById" resultMap="menuResultMap">
+        SELECT <include refid="menuColumns"/>
+        FROM sys_menu
+        WHERE menu_id = #{menuId}
+    </select>
+
+    <select id="selectByPath" resultMap="menuResultMap">
+        SELECT <include refid="menuColumns"/>
+        FROM sys_menu
+        WHERE path = #{path}
+        LIMIT 1
+    </select>
+
+    <select id="selectByPermissions" resultMap="menuResultMap">
+        SELECT <include refid="menuColumns"/>
+        FROM sys_menu
+        <choose>
+            <when test="permissions != null and !permissions.isEmpty()">
+                WHERE permission IN
+                <foreach collection="permissions" item="permissionPO" open="(" separator="," close=")">
+                    #{permissionPO.permissionCode}
+                </foreach>
+            </when>
+            <otherwise>
+                WHERE 1 = 0
+            </otherwise>
+        </choose>
+        ORDER BY sort_order, menu_id
+    </select>
+
+    <select id="selectAll" resultMap="menuResultMap">
+        SELECT <include refid="menuColumns"/>
+        FROM sys_menu
+        ORDER BY sort_order, menu_id
+    </select>
+</mapper>

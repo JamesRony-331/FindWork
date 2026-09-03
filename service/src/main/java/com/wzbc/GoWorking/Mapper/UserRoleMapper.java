@@ -12,5 +12,7 @@ public interface UserRoleMapper {
     int updateById(@Param("userRolePO") UserRolePO userRolePO);
     int deleteById(@Param("id") Long id);
     UserRolePO selectById(@Param("id") Long id);
+    UserRolePO selectByUserAndRole(@Param("userId") String userId, @Param("roleId") Long roleId);
+    List<UserRolePO> selectByUserId(@Param("userId") String userId);
     List<UserRolePO> selectAll();
 }

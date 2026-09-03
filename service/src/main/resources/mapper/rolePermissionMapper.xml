@@ -14,9 +14,61 @@
     <delete id="deleteById">
         DELETE FROM sys_role_permission WHERE id = #{id}
     </delete>
+    <delete id="deleteByRoleAndPermission">
+        DELETE FROM sys_role_permission
+        WHERE role_id = #{roleId} AND permission_id = #{permissionId}
+    </delete>
     <select id="selectById" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePermissionPO">
         SELECT id, role_id AS roleId, permission_id AS permissionId
         FROM sys_role_permission WHERE id = #{id}
+    </select>
+    <select id="selectByRoleAndPermission" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePermissionPO">
+        SELECT id, role_id AS roleId, permission_id AS permissionId
+        FROM sys_role_permission
+        WHERE role_id = #{roleId} AND permission_id = #{permissionId}
+        LIMIT 1
+    </select>
+    <select id="selectPermissionIdsByUserRoles" resultType="java.lang.Long">
+        SELECT DISTINCT permission_id
+        FROM sys_role_permission
+        <choose>
+            <when test="userRoles != null and !userRoles.isEmpty()">
+                WHERE role_id IN
+                <foreach collection="userRoles" item="userRole" open="(" separator="," close=")">
+                    #{userRole.roleId}
+                </foreach>
+            </when>
+            <otherwise>
+                WHERE 1 = 0
+            </otherwise>
+        </choose>
+        ORDER BY permission_id
+    </select>
+    <select id="selectPermissionIdsByRoleId" resultType="java.lang.Long">
+        SELECT DISTINCT permission_id
+        FROM sys_role_permission
+        WHERE role_id = #{roleId}
+        ORDER BY permission_id
+    </select>
+    <select id="selectPermissionsByUserRoles"
+            resultType="com.wzbc.GoWorking.entity.PO.RBAC.PermissionPO">
+        SELECT DISTINCT p.id,
+                        p.permission_name AS permissionName,
+                        p.permission_code AS permissionCode
+        FROM sys_role_permission rp
+        JOIN sys_permission p ON p.id = rp.permission_id
+        <choose>
+            <when test="userRoles != null and !userRoles.isEmpty()">
+                WHERE rp.role_id IN
+                <foreach collection="userRoles" item="userRole" open="(" separator="," close=")">
+                    #{userRole.roleId}
+                </foreach>
+            </when>
+            <otherwise>
+                WHERE 1 = 0
+            </otherwise>
+        </choose>
+        ORDER BY p.id
     </select>
     <select id="selectAll" resultType="com.wzbc.GoWorking.entity.PO.RBAC.RolePermissionPO">
         SELECT id, role_id AS roleId, permission_id AS permissionId

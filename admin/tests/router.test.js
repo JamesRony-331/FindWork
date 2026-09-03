@@ -1,43 +1,96 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import router, { routes } from '../src/router/index.js'
-import { clearDemoSession, createDemoSession } from '../src/utils/demoSession.js'
+import { createAdminRouter, staticRoutes } from '../src/router/index.js'
+import { clearAuthSession, createAuthSession } from '../src/utils/authSession.js'
 
-test('admin routes expose login, dashboard, and system management pages', () => {
-  assert.ok(routes.some((route) => route.path === '/login'))
-  const protectedLayout = routes.find((route) => route.meta?.requiresAuth)
-  assert.ok(protectedLayout?.children?.some((route) => route.path === '/dashboard'))
-  assert.deepEqual(protectedLayout?.children?.map((route) => route.name), [
-    'AdminDashboard',
-    'MenuManagement',
-    'RoleManagement',
-    'PermissionManagement',
-  ])
-  assert.equal(routes.filter((route) => route.meta?.requiresAuth).length, 1)
+const loginData = { nickname: 'admin', email: 'admin', token: 'test-token' }
+const backendMenus = [
+  { menuId: 1, parentId: 0, menuName: '数据大屏', menuType: 'C', path: '/dashboard', component: 'DashboardView', routeName: 'AdminDashboard' },
+  { menuId: 2, parentId: 0, menuName: '个人主页', menuType: 'C', path: '/profile', component: 'ProfileView', routeName: 'AdminProfile' },
+]
+
+test('only login and the protected layout remain static', () => {
+  assert.ok(staticRoutes.some((route) => route.path === '/login'))
+  const protectedLayout = staticRoutes.find((route) => route.name === 'AdminLayout')
+  assert.deepEqual(protectedLayout?.children?.map((route) => route.name), ['DynamicRouteBootstrap'])
 })
 
-test('admin home redirects according to the demo session', async () => {
-  clearDemoSession()
-  await router.push('/')
-  assert.equal(router.currentRoute.value.name, 'AdminLogin')
+test('authenticated navigation registers routes returned by the menu API', async () => {
+  createAuthSession(loginData, true)
+  let calls = 0
+  const router = createAdminRouter({
+    loadMenus: async () => {
+      calls += 1
+      return backendMenus
+    },
+  })
 
-  createDemoSession('admin', true)
-  await router.push('/')
+  await router.push('/dashboard')
+
   assert.equal(router.currentRoute.value.name, 'AdminDashboard')
-  clearDemoSession()
+  assert.ok(router.hasRoute('AdminProfile'))
+  assert.equal(calls, 1)
+
+  await router.push('/profile')
+  assert.equal(calls, 1)
+  clearAuthSession()
 })
 
-test('admin route guards keep unauthenticated users on login', async () => {
-  clearDemoSession()
-  await router.push('/')
+test('unauthenticated users stay on the static login route without loading menus', async () => {
+  clearAuthSession()
+  let calls = 0
+  const router = createAdminRouter({ loadMenus: async () => { calls += 1; return backendMenus } })
+
   await router.push('/dashboard')
+
   assert.equal(router.currentRoute.value.name, 'AdminLogin')
+  assert.equal(calls, 0)
 })
 
-test('admin route guards send authenticated users to the dashboard', async () => {
-  createDemoSession('admin', true)
-  await router.push('/dashboard')
+test('authenticated users visiting login are redirected after dynamic routes load', async () => {
+  createAuthSession(loginData, true)
+  const router = createAdminRouter({ loadMenus: async () => backendMenus })
+
   await router.push('/login')
+
   assert.equal(router.currentRoute.value.name, 'AdminDashboard')
-  clearDemoSession()
+  clearAuthSession()
+})
+
+test('unknown addresses fall back to the first accessible dynamic page', async () => {
+  createAuthSession(loginData, true)
+  const router = createAdminRouter({ loadMenus: async () => backendMenus })
+
+  await router.push('/not-authorized')
+
+  assert.equal(router.currentRoute.value.name, 'AdminDashboard')
+  clearAuthSession()
+})
+
+test('logging out removes old dynamic routes before another account loads menus', async () => {
+  let activeMenus = backendMenus.slice(0, 1)
+  let calls = 0
+  const router = createAdminRouter({
+    loadMenus: async () => {
+      calls += 1
+      return activeMenus
+    },
+  })
+
+  createAuthSession({ ...loginData, token: 'first-token' }, true)
+  await router.push('/dashboard')
+  assert.ok(router.hasRoute('AdminDashboard'))
+
+  clearAuthSession()
+  await router.push('/login')
+  assert.equal(router.hasRoute('AdminDashboard'), false)
+
+  activeMenus = backendMenus.slice(1)
+  createAuthSession({ ...loginData, token: 'second-token' }, true)
+  await router.push('/profile')
+
+  assert.equal(router.currentRoute.value.name, 'AdminProfile')
+  assert.equal(router.hasRoute('AdminDashboard'), false)
+  assert.equal(calls, 2)
+  clearAuthSession()
 })

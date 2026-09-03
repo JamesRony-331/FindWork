@@ -13,5 +13,6 @@ public interface PermissionMapper {
     int deleteById(@Param("id") Long id);
 
     PermissionPO selectById(@Param("id") Long id);
+    PermissionPO selectByCode(@Param("permissionCode") String permissionCode);
     List<PermissionPO> selectAll();
 }

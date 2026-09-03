@@ -1,8 +1,7 @@
-package com.wzbc.GoWorking.entity.PO;
+package com.wzbc.GoWorking.entity.PO.User;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data

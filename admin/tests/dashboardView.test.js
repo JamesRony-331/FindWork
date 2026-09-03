@@ -27,7 +27,8 @@ test('admin layout exposes responsive navigation and logout confirmation', () =>
   assert.match(layout, /首页/)
   assert.match(layout, /数据更新/)
   assert.match(layout, /<ConfirmDialog/)
-  assert.match(layout, /clearDemoSession/)
+  assert.match(layout, /clearAuthSession/)
+  assert.match(layout, /readAuthSession/)
   assert.doesNotMatch(layout, /window\.(?:alert|confirm)/)
 })
 

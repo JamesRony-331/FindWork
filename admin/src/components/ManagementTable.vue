@@ -12,6 +12,10 @@ const props = defineProps({
   fields: { type: Array, required: true },
   rows: { type: Array, required: true },
   primaryField: { type: String, default: 'name' },
+  saveHandler: { type: Function, default: null },
+  deletable: { type: Boolean, default: true },
+  showStatusFilter: { type: Boolean, default: true },
+  dialogWide: { type: Boolean, default: false },
 })
 
 const searchKeyword = ref('')
@@ -24,6 +28,8 @@ const editingId = ref(null)
 const pendingDeleteId = ref(null)
 const records = ref(props.rows.map((row) => ({ ...row })))
 const form = reactive({})
+const isSaving = ref(false)
+const saveError = ref('')
 
 const filteredRows = computed(() => records.value.filter((row) => {
   const keyword = searchKeyword.value.trim().toLowerCase()
@@ -34,11 +40,13 @@ const filteredRows = computed(() => records.value.filter((row) => {
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredRows.value.length / pageSize)))
 const pagedRows = computed(() => filteredRows.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
-const editingRecord = computed(() => records.value.find((row) => row.id === editingId.value))
 const deleteRecord = computed(() => records.value.find((row) => row.id === pendingDeleteId.value))
 
 watch([searchKeyword, statusFilter], () => { currentPage.value = 1 })
 watch(totalPages, (pages) => { if (currentPage.value > pages) currentPage.value = pages })
+watch(() => props.rows, (rows) => {
+  records.value = rows.map((row) => ({ ...row }))
+}, { deep: true })
 
 function resetForm(row = {}) {
   for (const field of props.fields) form[field.key] = row[field.key] ?? field.defaultValue ?? ''
@@ -46,26 +54,42 @@ function resetForm(row = {}) {
 
 function openCreate() {
   editingId.value = null
+  saveError.value = ''
   resetForm()
   editorOpen.value = true
 }
 
 function openEdit(row) {
   editingId.value = row.id
+  saveError.value = ''
   resetForm(row)
   editorOpen.value = true
 }
 
-function saveRecord() {
+async function saveRecord() {
   const payload = Object.fromEntries(props.fields.map((field) => [field.key, form[field.key]]))
-  if (editingId.value === null) {
-    const nextId = Math.max(0, ...records.value.map((row) => Number(row.id) || 0)) + 1
-    records.value.unshift({ id: nextId, ...payload, status: payload.status || 'enabled' })
-  } else {
-    const index = records.value.findIndex((row) => row.id === editingId.value)
-    if (index >= 0) records.value[index] = { ...records.value[index], ...payload }
+  saveError.value = ''
+  isSaving.value = true
+  try {
+    if (props.saveHandler) {
+      await props.saveHandler(editingId.value === null ? payload : { id: editingId.value, ...payload })
+      editorOpen.value = false
+      return
+    }
+
+    if (editingId.value === null) {
+      const nextId = Math.max(0, ...records.value.map((row) => Number(row.id) || 0)) + 1
+      records.value.unshift({ id: nextId, ...payload, status: payload.status || 'enabled' })
+    } else {
+      const index = records.value.findIndex((row) => row.id === editingId.value)
+      if (index >= 0) records.value[index] = { ...records.value[index], ...payload }
+    }
+    editorOpen.value = false
+  } catch (error) {
+    saveError.value = error?.message || '保存失败，请稍后重试'
+  } finally {
+    isSaving.value = false
   }
-  editorOpen.value = false
 }
 
 function askDelete(row) {
@@ -103,7 +127,7 @@ function displayValue(row, column) {
         <AppIcon name="search" />
         <input v-model="searchKeyword" type="search" :placeholder="searchPlaceholder" />
       </label>
-      <label class="management-status">
+      <label v-if="showStatusFilter" class="management-status">
         <span>状态</span>
         <select v-model="statusFilter">
           <option value="all">全部状态</option>
@@ -135,7 +159,7 @@ function displayValue(row, column) {
               <td>
                 <div class="management-table__actions">
                   <button type="button" @click="openEdit(row)">编辑</button>
-                  <button class="management-table__delete" type="button" @click="askDelete(row)">删除</button>
+                  <button v-if="deletable" class="management-table__delete" type="button" @click="askDelete(row)">删除</button>
                 </div>
               </td>
             </tr>
@@ -156,29 +180,33 @@ function displayValue(row, column) {
 
     <Teleport to="body">
       <div v-if="editorOpen" class="management-dialog-backdrop" @click.self="editorOpen = false">
-        <section class="management-dialog panel" role="dialog" aria-modal="true" :aria-label="editingId === null ? addLabel : `编辑${title}`">
+        <section class="management-dialog panel" :class="{ 'management-dialog--wide': dialogWide }" role="dialog" aria-modal="true" :aria-label="editingId === null ? addLabel : `编辑${title}`">
           <header>
             <h2>{{ editingId === null ? addLabel : `编辑${title.replace('管理', '')}` }}</h2>
             <button type="button" aria-label="关闭弹窗" @click="editorOpen = false">×</button>
           </header>
           <form @submit.prevent="saveRecord">
-            <label v-for="field in fields" :key="field.key" class="field">
-              <span class="field__label">{{ field.label }}</span>
-              <select v-if="field.type === 'select'" v-model="form[field.key]" class="field__control">
+            <div v-for="field in fields" :key="field.key" class="field">
+              <span v-if="$slots[`field-${field.key}`]" class="field__label">{{ field.label }}</span>
+              <label v-else class="field__label" :for="`management-field-${field.key}`">{{ field.label }}</label>
+              <slot v-if="$slots[`field-${field.key}`]" :name="`field-${field.key}`" :form="form" :editing-id="editingId" />
+              <select v-else-if="field.type === 'select'" :id="`management-field-${field.key}`" v-model="form[field.key]" class="field__control">
                 <option v-for="option in field.options" :key="option.value" :value="option.value">{{ option.label }}</option>
               </select>
-              <input v-else v-model="form[field.key]" class="field__control" :placeholder="field.placeholder" :required="field.required" />
-            </label>
+              <input v-else :id="`management-field-${field.key}`" v-model="form[field.key]" class="field__control" :placeholder="field.placeholder" :required="field.required" />
+            </div>
             <footer>
               <button class="button button--secondary" type="button" @click="editorOpen = false">取消</button>
-              <button class="button" type="submit">保存</button>
+              <button class="button" type="submit" :disabled="isSaving">{{ isSaving ? '保存中…' : '保存' }}</button>
             </footer>
+            <p v-if="saveError" class="field__error" role="alert">{{ saveError }}</p>
           </form>
         </section>
       </div>
     </Teleport>
 
     <ConfirmDialog
+      v-if="deletable"
       :open="deleteOpen"
       title="确认删除"
       :message="`确定删除“${deleteRecord?.[primaryField] || '该记录'}”吗？此操作仅影响当前静态演示数据。`"
@@ -214,6 +242,7 @@ function displayValue(row, column) {
 .management-pagination div { display: flex; gap: var(--space-2); }
 .management-dialog-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: var(--space-4); background: var(--color-nav); }
 .management-dialog { width: min(100%, 520px); padding: var(--space-6); }
+.management-dialog--wide { width: min(100%, 760px); }
 .management-dialog > header, .management-dialog form > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .management-dialog > header button { background: transparent; color: var(--color-muted); font-size: 26px; }
 .management-dialog form { display: grid; gap: var(--space-4); margin-top: var(--space-5); }

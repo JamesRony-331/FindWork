@@ -12,5 +12,7 @@ public interface RoleMapper {
     int updateById(@Param("rolePO") RolePO rolePO);
     int deleteById(@Param("id") Long id);
     RolePO selectById(@Param("id") Long id);
+    RolePO selectByCode(@Param("roleCode") String roleCode);
+    List<RolePO> selectByUserId(@Param("userId") String userId);
     List<RolePO> selectAll();
 }
