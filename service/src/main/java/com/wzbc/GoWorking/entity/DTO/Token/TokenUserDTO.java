@@ -10,21 +10,13 @@ import java.util.Date;
 
 public class TokenUserDTO
 {
-    private static String getSecretKey() {
-        String secretKey = System.getenv("JWT_SECRET");
-        if (secretKey == null || secretKey.isBlank()) {
-            throw new IllegalStateException("未配置 JWT_SECRET 环境变量");
-        }
-        return secretKey;
-    }
-
     // 生成Token
     public static String generateToken(String userId) {
         return Jwts.builder()
                 .setSubject(userId)  // 设置用户ID
                 .setIssuedAt(new Date())  // 设置签发时间
                 .setExpiration(new Date(System.currentTimeMillis() + 3600000 * 24))  // 设置过期时间，24小时
-                .signWith(SignatureAlgorithm.HS256, getSecretKey())  // 使用HS256算法进行签名
+                .signWith(SignatureAlgorithm.HS256, JwtSecretProvider.getSecret())  // 使用HS256算法进行签名
                 .compact();  // 生成Token
     }
 
@@ -32,7 +24,7 @@ public class TokenUserDTO
     public static String parseToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getSecretKey())  // 设置密钥
+                    .setSigningKey(JwtSecretProvider.getSecret())  // 设置密钥
                     .build()
                     .parseClaimsJws(token)  // 解析Token
                     .getBody();
@@ -52,7 +44,7 @@ public class TokenUserDTO
     public static boolean isTokenExpired(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getSecretKey())  // 设置密钥
+                    .setSigningKey(JwtSecretProvider.getSecret())  // 设置密钥
                     .build()
                     .parseClaimsJws(token)  // 解析Token
                     .getBody();

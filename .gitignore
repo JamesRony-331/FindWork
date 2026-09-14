@@ -30,6 +30,8 @@ dist-ssr
 
 # Backend build output and local credentials
 **/target/
+**/.env
+!**/.env.example
 service/src/main/resources/application.properties
 
 # Local isolated development worktrees
